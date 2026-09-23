@@ -95,7 +95,7 @@ export default function Dashboard() {
       ========================== */}
 
       <div
-        className="mb-7 flex flex-col gap-4 rounded-3xl p-6 text-white shadow-xl sm:p-7 lg:flex-row lg:items-center lg:justify-between"
+        className="mb-5 flex flex-col gap-4 rounded-3xl p-5 text-white shadow-xl sm:mb-7 sm:p-7 lg:flex-row lg:items-center lg:justify-between"
         style={{
           background:
             "linear-gradient(135deg, #3A0CA3 0%, #4813B8 70%, #5A1ED0 100%)",
@@ -135,7 +135,7 @@ export default function Dashboard() {
           STATISTICS CARDS
       ========================== */}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {cards.map(
           ({ label, value, note, icon: Icon, tone }) => (
             <div
@@ -148,7 +148,7 @@ export default function Dashboard() {
                     {label}
                   </p>
 
-                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">
+                  <p className="mt-1.5 text-2xl font-black tracking-tight text-slate-900 sm:mt-2 sm:text-3xl">
                     {value}
                   </p>
                 </div>
@@ -160,7 +160,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <p className="mt-4 text-xs font-semibold text-slate-400">
+              <p className="mt-3 text-[11px] font-semibold leading-4 text-slate-400 sm:mt-4 sm:text-xs">
                 {note}
               </p>
             </div>
@@ -174,7 +174,7 @@ export default function Dashboard() {
           SALES SUMMARY
       ========================== */}
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-5 sm:gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-xs font-semibold text-slate-400">Today&apos;s Sales</p>
           <p className="mt-1 text-2xl font-black text-[#3A0CA3]">
@@ -189,7 +189,7 @@ export default function Dashboard() {
           </p>
           <p className="mt-1 text-xs text-slate-400">{stats.totalBills} bills generated</p>
         </div>
-        <div className="card p-5">
+        <div className="card col-span-2 p-4 sm:col-span-1 sm:p-5">
           <p className="text-xs font-semibold text-slate-400">Staff Billing</p>
           <p className="mt-1 text-2xl font-black text-emerald-600">Live stock sync</p>
           <p className="mt-1 text-xs text-slate-400">Staff sales immediately reduce inventory</p>
@@ -200,7 +200,7 @@ export default function Dashboard() {
           CUSTOMER BILLING HISTORY
       ========================== */}
 
-      <div className="card mt-5 p-5">
+      <div className="card mt-4 p-4 sm:mt-5 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-extrabold text-slate-900">Customer Billing History</h3>
@@ -214,79 +214,54 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-4 sm:mt-5">
           {sales.length ? (
-            <table className="w-full min-w-[900px] text-left">
-              <thead>
-                <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-400">
-                  <th className="pb-3">Customer</th>
-                  <th className="pb-3">Mobile</th>
-                  <th className="pb-3">Invoice</th>
-                  <th className="pb-3">Medicines</th>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+            <>
+              <div className="space-y-3 md:hidden">
                 {sales.map((sale) => (
-                  <tr key={sale.id} className="transition hover:bg-purple-50/40">
-                    <td className="py-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F0EBFF] text-[#3A0CA3]">
-                          <UserRound size={16} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-800">
-                            {sale.customerName}
-                          </p>
-                          <p className="text-[11px] text-slate-400">Customer</p>
+                  <div key={sale.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F0EBFF] text-[#3A0CA3]"><UserRound size={16} /></div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-800">{sale.customerName}</p>
+                          <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-slate-500"><Phone size={12} />{sale.customerMobile}</div>
                         </div>
                       </div>
-                    </td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
-                        <Phone size={14} className="text-slate-400" />
-                        {sale.customerMobile}
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-black text-emerald-600">₹{Number(sale.total || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="mt-0.5 text-[10px] font-bold text-[#3A0CA3]">{sale.invoiceNo}</p>
                       </div>
-                    </td>
-                    <td className="py-4 text-sm font-bold text-[#3A0CA3]">
-                      {sale.invoiceNo}
-                    </td>
-                    <td className="py-4">
-                      <div className="max-w-[280px] space-y-1">
-                        {sale.items?.map((item) => (
-                          <p key={`${sale.id}-${item.medicineId}`} className="text-xs text-slate-600">
-                            <span className="font-semibold text-slate-800">{item.name}</span>
-                            <span className="text-slate-400"> × {item.quantity}</span>
-                          </p>
-                        ))}
+                    </div>
+                    <div className="mt-3 border-t border-slate-200 pt-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Medicines</p>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {sale.items?.map((item) => (<span key={`${sale.id}-${item.medicineId}`} className="rounded-lg bg-white px-2 py-1 text-[11px] font-semibold text-slate-600">{item.name} × {item.quantity}</span>))}
                       </div>
-                    </td>
-                    <td className="py-4 text-sm text-slate-600">
-                      {new Date(sale.createdAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                    <td className="py-4 text-right text-sm font-black text-emerald-600">
-                      ₹{Number(sale.total || 0).toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </td>
-                  </tr>
+                      <p className="mt-2 text-[10px] text-slate-400">{new Date(sale.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[900px] text-left">
+                  <thead><tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-400"><th className="pb-3">Customer</th><th className="pb-3">Mobile</th><th className="pb-3">Invoice</th><th className="pb-3">Medicines</th><th className="pb-3">Date</th><th className="pb-3 text-right">Amount</th></tr></thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {sales.map((sale) => (<tr key={sale.id} className="transition hover:bg-purple-50/40">
+                      <td className="py-4"><div className="flex items-center gap-2.5"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F0EBFF] text-[#3A0CA3]"><UserRound size={16} /></div><div><p className="text-sm font-bold text-slate-800">{sale.customerName}</p><p className="text-[11px] text-slate-400">Customer</p></div></div></td>
+                      <td className="py-4"><div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700"><Phone size={14} className="text-slate-400" />{sale.customerMobile}</div></td>
+                      <td className="py-4 text-sm font-bold text-[#3A0CA3]">{sale.invoiceNo}</td>
+                      <td className="py-4"><div className="max-w-[280px] space-y-1">{sale.items?.map((item) => (<p key={`${sale.id}-${item.medicineId}`} className="text-xs text-slate-600"><span className="font-semibold text-slate-800">{item.name}</span><span className="text-slate-400"> × {item.quantity}</span></p>))}</div></td>
+                      <td className="py-4 text-sm text-slate-600">{new Date(sale.createdAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+                      <td className="py-4 text-right text-sm font-black text-emerald-600">₹{Number(sale.total || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-              <Receipt className="mx-auto text-slate-300" size={30} />
-              <p className="mt-2 text-sm font-bold text-slate-600">No customer bills yet</p>
-              <p className="mt-1 text-xs text-slate-400">Staff-generated bills will appear here automatically.</p>
-            </div>
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center"><Receipt className="mx-auto text-slate-300" size={30} /><p className="mt-2 text-sm font-bold text-slate-600">No customer bills yet</p><p className="mt-1 text-xs text-slate-400">Staff-generated bills will appear here automatically.</p></div>
           )}
         </div>
       </div>
@@ -295,10 +270,10 @@ export default function Dashboard() {
           MAIN CONTENT
       ========================== */}
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-3">
+      <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 xl:grid-cols-3">
 
         {/* Medicine Attention List */}
-        <div className="card p-5 xl:col-span-2">
+        <div className="card p-4 sm:p-5 xl:col-span-2">
 
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -321,61 +296,24 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="mt-5 overflow-x-auto">
-
+          <div className="mt-4 sm:mt-5">
             {attentionItems.length ? (
-              <table className="w-full min-w-[680px] text-left">
-
-                <thead>
-                  <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-400">
-                    <th className="pb-3">Medicine</th>
-                    <th className="pb-3">Stock</th>
-                    <th className="pb-3">Expiry</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-slate-100">
+              <>
+                <div className="space-y-3 md:hidden">
                   {attentionItems.map((medicine) => (
-                    <tr
-                      key={medicine.id}
-                      className="transition hover:bg-yellow-50/40"
-                    >
-                      <td className="py-4">
-                        <p className="text-sm font-bold text-slate-800">
-                          {medicine.name}
-                        </p>
-
-                        <p className="mt-0.5 text-xs text-slate-400">
-                          {medicine.code} • {medicine.batch}
-                        </p>
-                      </td>
-
-                      <td className="py-4 text-sm font-semibold text-slate-700">
-                        {medicine.quantity} units
-                      </td>
-
-                      <td className="py-4 text-sm text-slate-600">
-                        {formatDate(medicine.expiryDate)}
-                      </td>
-
-                      <td className="py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          <StockBadge medicine={medicine} />
-                          <ExpiryBadge date={medicine.expiryDate} />
-                        </div>
-                      </td>
-                    </tr>
+                    <div key={medicine.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
+                      <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-800">{medicine.name}</p><p className="mt-0.5 truncate text-[10px] text-slate-400">{medicine.code} • {medicine.batch}</p></div><p className="shrink-0 text-sm font-black text-slate-700">{medicine.quantity} units</p></div>
+                      <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3"><p className="text-[11px] font-semibold text-slate-500">Exp: {formatDate(medicine.expiryDate)}</p><div className="flex flex-wrap justify-end gap-1.5"><StockBadge medicine={medicine} /><ExpiryBadge date={medicine.expiryDate} /></div></div>
+                    </div>
                   ))}
-                </tbody>
-
-              </table>
-            ) : (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center text-sm font-semibold text-emerald-700">
-                All medicines look good right now.
-              </div>
-            )}
-
+                </div>
+                <div className="hidden overflow-x-auto md:block">
+                  <table className="w-full min-w-[680px] text-left"><thead><tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-400"><th className="pb-3">Medicine</th><th className="pb-3">Stock</th><th className="pb-3">Expiry</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">
+                    {attentionItems.map((medicine) => (<tr key={medicine.id} className="transition hover:bg-yellow-50/40"><td className="py-4"><p className="text-sm font-bold text-slate-800">{medicine.name}</p><p className="mt-0.5 text-xs text-slate-400">{medicine.code} • {medicine.batch}</p></td><td className="py-4 text-sm font-semibold text-slate-700">{medicine.quantity} units</td><td className="py-4 text-sm text-slate-600">{formatDate(medicine.expiryDate)}</td><td className="py-4"><div className="flex flex-wrap gap-1.5"><StockBadge medicine={medicine} /><ExpiryBadge date={medicine.expiryDate} /></div></td></tr>))}
+                  </tbody></table>
+                </div>
+              </>
+            ) : (<div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center text-sm font-semibold text-emerald-700">All medicines look good right now.</div>)}
           </div>
         </div>
 
@@ -383,7 +321,7 @@ export default function Dashboard() {
             RIGHT SIDE CARDS
         ========================== */}
 
-        <div className="space-y-5">
+        <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 xl:grid-cols-1">
 
           {/* Suppliers */}
           <div className="card p-5">
@@ -450,7 +388,7 @@ export default function Dashboard() {
           </div>
 
           {/* Expiry Monitoring */}
-          <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5">
+          <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 sm:p-5">
 
             <div className="flex gap-3">
 
