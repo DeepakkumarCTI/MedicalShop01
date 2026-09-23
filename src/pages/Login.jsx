@@ -160,14 +160,7 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-5 border-t border-slate-100 pt-4 text-center">
-              <p className="text-[10px] text-slate-400">
-                Demo credentials: Admin <b>admin@medicare.com / admin123</b>
-              </p>
-              <p className="mt-1 text-[10px] text-slate-400">
-                Staff <b>staff@medicare.com / staff123</b>
-              </p>
-            </div>
+            
           </div>
         </div>
       </div>
