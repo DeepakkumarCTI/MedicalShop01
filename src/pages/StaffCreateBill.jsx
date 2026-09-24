@@ -1132,7 +1132,7 @@ export default function StaffCreateBill() {
 
                           setError("");
                         }}
-                        placeholder="Enter customer name"
+                        placeholder=""
                       />
                     </div>
                   </div>
@@ -1169,7 +1169,7 @@ export default function StaffCreateBill() {
 
                           setError("");
                         }}
-                        placeholder="10-digit mobile number"
+                        placeholder=""
                       />
                     </div>
                   </div>
