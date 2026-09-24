@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -110,7 +111,7 @@ export default function Medicines() {
   );
 
   return (
-    <div className="mx-auto max-w-[1500px]">
+    <div className="mx-auto max-w-[1500px] pb-8">
 
       {/* =========================
           PAGE HEADER
@@ -122,7 +123,7 @@ export default function Medicines() {
         action={
           <Link
             to="/medicines/new"
-            className="btn-primary"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-4 py-2.5 text-sm font-bold text-[#3F2930] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#D7A5B0] hover:shadow-md"
           >
             <Plus size={18} />
             Add medicine
@@ -134,10 +135,10 @@ export default function Medicines() {
           MEDICINES CARD
       ========================== */}
 
-      <div className="card overflow-hidden">
+      <div className="mt-5 overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
 
         {/* Search + Filters */}
-        <div className="border-b border-slate-100 p-4 sm:p-5">
+        <div className="border-b border-[#EAD5D8] bg-white p-4 sm:p-5">
 
           <div className="flex flex-col gap-3 lg:flex-row">
 
@@ -145,7 +146,7 @@ export default function Medicines() {
             <div className="relative flex-1">
 
               <Search
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#B29BA1]"
                 size={18}
               />
 
@@ -158,8 +159,9 @@ export default function Medicines() {
 
               {q && (
                 <button
+                  type="button"
                   onClick={() => setQ("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#3A0CA3]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#A96F7D]"
                 >
                   <X size={17} />
                 </button>
@@ -169,7 +171,8 @@ export default function Medicines() {
 
             {/* Mobile Filters */}
             <button
-              className="btn-secondary lg:hidden"
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#EAD5D8] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[C2DFE3] hover:bg-[#5C6B73] hover:text-[#5A3941] lg:hidden"
               onClick={() =>
                 setShowFilters((v) => !v)
               }
@@ -224,9 +227,9 @@ export default function Medicines() {
           </div>
 
           {/* Result Count */}
-          <div className="mt-3 text-xs font-semibold text-slate-400">
+          <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-slate-400">
             Showing{" "}
-            <span className="font-bold text-[#3A0CA3]">
+            <span className="rounded-full bg-[#5C6B73] px-2 py-0.5 font-bold text-[#7A4D58]">
               {filtered.length}
             </span>{" "}
             of {data.medicines.length} medicines
@@ -242,8 +245,8 @@ export default function Medicines() {
 
           <table className="w-full min-w-[1050px] text-left">
 
-            <thead className="bg-[#F8F7FF]">
-              <tr className="text-xs font-bold uppercase tracking-wide text-slate-400">
+            <thead className="bg-[#9DB4C0]">
+              <tr className="text-xs font-bold uppercase tracking-wide text-[#9B858B]">
 
                 <th className="px-5 py-3.5">
                   Medicine
@@ -276,13 +279,13 @@ export default function Medicines() {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#F0E2E4]">
 
               {filtered.map((medicine) => (
 
                 <tr
                   key={medicine.id}
-                  className="transition hover:bg-[#FFFDE7]"
+                  className="transition hover:bg-[#9DB4C0]"
                 >
 
                   {/* Medicine */}
@@ -291,18 +294,18 @@ export default function Medicines() {
                     <div className="flex items-center gap-3">
 
                       <div
-                        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-extrabold shadow-sm"
                         style={{
-                          backgroundColor: "#FFF275",
-                          color: "#3A0CA3",
+                          backgroundColor: "#5C6B73",
+                          color: "#8E5A68",
                         }}
                       >
-                        {medicine.name.charAt(0)}
+                        {medicine.name.charAt(0).toUpperCase()}
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
 
-                        <p className="text-sm font-bold text-slate-800">
+                        <p className="truncate text-sm font-bold text-[#3F2930]">
                           {medicine.name}
                         </p>
 
@@ -319,7 +322,9 @@ export default function Medicines() {
 
                   {/* Category */}
                   <td className="px-5 py-4 text-sm text-slate-600">
-                    {medicine.category}
+                    <span className="inline-flex rounded-lg bg-[#9DB4C0] px-2.5 py-1 text-xs font-semibold text-[#6A414B]">
+                      {medicine.category}
+                    </span>
                   </td>
 
                   {/* Stock */}
@@ -337,7 +342,7 @@ export default function Medicines() {
                   </td>
 
                   {/* Price */}
-                  <td className="px-5 py-4 text-sm font-semibold text-slate-700">
+                  <td className="px-5 py-4 text-sm font-bold text-[#6A414B]">
                     ₹{Number(medicine.unitPrice).toFixed(2)}
                   </td>
 
@@ -373,7 +378,7 @@ export default function Medicines() {
                       {/* Edit */}
                       <Link
                         to={`/medicines/${medicine.id}/edit`}
-                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-[#FFF275] hover:bg-[#FFFDE7] hover:text-[#3A0CA3]"
+                        className="rounded-lg border border-[#EAD5D8] bg-white p-2 text-[#8E727A] transition hover:border-[C2DFE3] hover:bg-[#5C6B73] hover:text-[#6A414B]"
                         title="Edit medicine"
                       >
                         <Edit3 size={16} />
@@ -381,10 +386,11 @@ export default function Medicines() {
 
                       {/* Delete */}
                       <button
+                        type="button"
                         onClick={() =>
                           setDeleteId(medicine.id)
                         }
-                        className="rounded-lg border border-rose-200 p-2 text-rose-500 transition hover:bg-rose-50"
+                        className="rounded-lg border border-rose-200 bg-white p-2 text-rose-500 transition hover:bg-rose-50 hover:text-rose-600"
                         title="Delete medicine"
                       >
                         <Trash2 size={16} />
@@ -404,25 +410,34 @@ export default function Medicines() {
 
           {/* Empty State */}
           {!filtered.length && (
-            <div className="p-14 text-center">
+            <div className="border-t border-[#F0E2E4] bg-[#9DB4C0] px-5 py-14 text-center">
 
-              <div
-                className="mx-auto grid h-12 w-12 place-items-center rounded-xl"
-                style={{
-                  backgroundColor: "#F0EBFF",
-                  color: "#3A0CA3",
-                }}
-              >
-                <Search size={20} />
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-[#EAD5D8] bg-[#5C6B73] text-[#A96F7D]">
+                <Search size={21} />
               </div>
 
-              <p className="mt-3 font-bold text-slate-700">
+              <p className="mt-4 font-extrabold text-[#3F2930]">
                 No medicines found
               </p>
 
               <p className="mt-1 text-sm text-slate-400">
                 Try changing your search or filters.
               </p>
+
+              {(q || category !== "All" || status !== "All") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQ("");
+                    setCategory("All");
+                    setStatus("All");
+                  }}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[C2DFE3] px-3.5 py-2 text-xs font-bold text-[#3F2930] transition hover:bg-[#D7A5B0]"
+                >
+                  <X size={14} />
+                  Clear filters
+                </button>
+              )}
 
             </div>
           )}
@@ -450,3 +465,5 @@ export default function Medicines() {
     </div>
   );
 }
+
+

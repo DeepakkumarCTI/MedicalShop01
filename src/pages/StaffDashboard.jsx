@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import {
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
+  Activity,
   LogOut,
-  Minus,
   Plus,
-  Printer,
+  Minus,
   Search,
   ShoppingCart,
   Trash2,
+  ArrowRight,
+  Package,
   UserRound,
+  X,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
@@ -21,54 +21,73 @@ const money = (value) =>
     maximumFractionDigits: 2,
   })}`;
 
-const formatDateTime = (value) =>
-  new Date(value).toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
 export default function StaffDashboard() {
-  const { data, stats, createSale, logout } = useApp();
+  const { data, logout } = useApp();
   const navigate = useNavigate();
 
-  const [customer, setCustomer] = useState({ name: "", mobile: "" });
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState([]);
-  const [error, setError] = useState("");
-  const [bill, setBill] = useState(null);
+  const [category, setCategory] = useState("all");
 
-  const availableMedicines = useMemo(() => {
+  const categories = useMemo(() => {
+    return [
+      "all",
+      ...Array.from(new Set(data.medicines.map((m) => m.category).filter(Boolean))),
+    ];
+  }, [data.medicines]);
+
+  const medicines = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     return data.medicines.filter((medicine) => {
-      const available =
-        Number(medicine.quantity) > 0 &&
-        new Date(`${medicine.expiryDate}T23:59:59`) >= new Date();
-      const matches =
+      const matchesQuery =
         !q ||
-        `${medicine.name} ${medicine.code} ${medicine.category}`
-          .toLowerCase()
-          .includes(q);
-      return available && matches;
+        medicine.name.toLowerCase().includes(q) ||
+        medicine.code.toLowerCase().includes(q) ||
+        medicine.manufacturer.toLowerCase().includes(q);
+
+      const matchesCategory =
+        category === "all" || medicine.category === category;
+
+      const notExpired =
+        new Date(`${medicine.expiryDate}T23:59:59`) >= new Date();
+
+      return matchesQuery && matchesCategory && notExpired;
     });
-  }, [data.medicines, query]);
+  }, [data.medicines, query, category]);
 
   const cartTotal = cart.reduce(
     (sum, item) => sum + Number(item.quantity) * Number(item.unitPrice),
     0
   );
 
+  const cartCount = cart.reduce(
+    (sum, item) => sum + Number(item.quantity),
+    0
+  );
+
   const addToCart = (medicine) => {
-    setError("");
+    if (Number(medicine.quantity) <= 0) return;
+
     setCart((current) => {
-      const existing = current.find((item) => item.medicineId === medicine.id);
+      const existing = current.find(
+        (item) => item.medicineId === medicine.id
+      );
+
       if (existing) {
-        if (existing.quantity >= Number(medicine.quantity)) return current;
         return current.map((item) =>
           item.medicineId === medicine.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? {
+                ...item,
+                quantity: Math.min(
+                  Number(item.quantity) + 1,
+                  Number(medicine.quantity)
+                ),
+              }
             : item
         );
       }
+
       return [
         ...current,
         {
@@ -82,392 +101,332 @@ export default function StaffDashboard() {
     });
   };
 
-  const changeQuantity = (medicineId, nextQuantity) => {
-    const medicine = data.medicines.find((item) => item.id === medicineId);
+  const changeQuantity = (medicineId, amount) => {
+    const medicine = data.medicines.find((m) => m.id === medicineId);
     if (!medicine) return;
 
-    if (nextQuantity <= 0) {
-      setCart((current) => current.filter((item) => item.medicineId !== medicineId));
-      return;
-    }
-
-    const safeQuantity = Math.min(nextQuantity, Number(medicine.quantity));
     setCart((current) =>
-      current.map((item) =>
-        item.medicineId === medicineId
-          ? { ...item, quantity: safeQuantity }
-          : item
-      )
+      current
+        .map((item) =>
+          item.medicineId === medicineId
+            ? {
+                ...item,
+                quantity: Math.min(
+                  Math.max(0, Number(item.quantity) + amount),
+                  Number(medicine.quantity)
+                ),
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
     );
   };
 
-  const generateBill = (e) => {
-    e.preventDefault();
-    setError("");
+  const removeFromCart = (medicineId) => {
+    setCart((current) =>
+      current.filter((item) => item.medicineId !== medicineId)
+    );
+  };
 
-    if (!customer.name.trim()) {
-      setError("Please enter the customer name.");
-      return;
-    }
+  const clearCart = () => setCart([]);
 
-    if (!/^[0-9]{10}$/.test(customer.mobile.trim())) {
-      setError("Please enter a valid 10-digit mobile number.");
-      return;
-    }
-
-    if (!cart.length) {
-      setError("Please add at least one medicine to the bill.");
-      return;
-    }
-
-    const result = createSale(customer, cart);
-    if (!result.success) {
-      setError(result.message);
-      return;
-    }
-
-    setBill(result.sale);
-    setCustomer({ name: "", mobile: "" });
-    setCart([]);
+  const createBill = () => {
+    if (!cart.length) return;
+    navigate("/staff/create-bill", { state: { cart } });
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur print:hidden">
-        <div className="mx-auto flex h-20 max-w-[1500px] items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#FFF275] text-[#3A0CA3]">
-              <UserRound size={21} />
+    <div className="min-h-screen bg-[#9DB4C0]">
+      <header className="sticky top-0 z-30 border-b border-[#EAD5D8] bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex min-h-16 max-w-[1450px] items-center justify-between gap-3 px-3 sm:min-h-20 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[C2DFE3] text-[#4A3037] shadow-sm">
+              <Activity size={21} />
             </div>
-            <div>
-              <p className="text-lg font-black text-slate-900">MediCare</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Staff Billing Desk
+            <div className="min-w-0">
+              <p className="truncate text-lg font-black text-[#3F2930]">MediCare</p>
+              <p className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-[#A88F95] sm:block">
+                Staff Billing Portal
               </p>
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="btn-secondary px-3 py-2 text-xs sm:px-4 sm:text-sm"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 rounded-xl bg-[#9DB4C0] px-3 py-2 sm:flex">
+              <UserRound size={15} className="text-[#A96F7D]" />
+              <span className="text-xs font-bold text-[#5F4A50]">Staff</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#EAD5D8] bg-white px-3 py-2 text-xs font-bold text-[#6F5A60] transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:p-0">
-        <div className="mb-6 grid gap-4 sm:grid-cols-3 print:hidden">
-          <Stat label="Available Medicines" value={stats.totalMedicines - stats.outOfStock} />
-          <Stat label="Total Stock Units" value={stats.totalUnits} />
-          <Stat label="Low Quantity" value={stats.lowStock} warning />
+      <main className="mx-auto max-w-[1450px] px-3 py-5 sm:px-6 sm:py-7 lg:px-8">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#A96F7D]">
+              Staff workspace
+            </p>
+            <h1 className="mt-1 text-2xl font-black text-[#3F2930] sm:text-3xl">
+              Medicines & Billing
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Select medicines, review your cart, and create a customer bill.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={createBill}
+            disabled={!cart.length}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-4 py-2.5 text-sm font-extrabold text-[#3F2930] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#D7A5B0] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          >
+            <ShoppingCart size={17} />
+            Create Bill ({cartCount})
+            <ArrowRight size={16} />
+          </button>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr] print:block">
-          <section className="card overflow-hidden print:hidden">
-            <div className="border-b border-slate-100 p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-xl font-black text-slate-900">
-                    Available medicines
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Select medicines requested by the customer.
-                  </p>
-                </div>
-
-                <div className="relative w-full sm:w-72">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <section className="min-w-0 rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
+            <div className="border-b border-[#EAD5D8] p-4 sm:p-5">
+              <div className="flex flex-col gap-3 md:flex-row">
+                <div className="relative min-w-0 flex-1">
                   <Search
                     size={17}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                   />
                   <input
-                    className="input pl-9"
-                    placeholder="Search medicine..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search medicine, code or manufacturer..."
+                    className="h-11 w-full rounded-xl border border-[#EAD5D8] bg-[#9DB4C0DFD] pl-10 pr-4 text-sm outline-none transition focus:border-[#D7A5B0] focus:ring-2 focus:ring-[C2DFE3]/25"
                   />
                 </div>
+
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="h-11 rounded-xl border border-[#EAD5D8] bg-white px-3 text-sm font-semibold text-[#5F4A50] outline-none focus:border-[#D7A5B0]"
+                >
+                  {categories.map((item) => (
+                    <option key={item} value={item}>
+                      {item === "all" ? "All categories" : item}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div className="max-h-[620px] overflow-y-auto p-4">
-              {availableMedicines.length ? (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {availableMedicines.map((medicine) => {
-                    const low =
-                      Number(medicine.quantity) <= Number(medicine.reorderLevel);
-                    const inCart = cart.find((item) => item.medicineId === medicine.id);
+            <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
+              {medicines.map((medicine) => {
+                const inCart = cart.find(
+                  (item) => item.medicineId === medicine.id
+                );
+                const available = Number(medicine.quantity);
+                const soldOut = available <= 0;
 
-                    return (
-                      <div
-                        key={medicine.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-[#3A0CA3]/30 hover:shadow-md"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="font-bold text-slate-900">{medicine.name}</h3>
-                            <p className="mt-1 text-[11px] text-slate-400">
-                              {medicine.code} • {medicine.category}
-                            </p>
-                          </div>
-                          {low && (
-                            <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
-                              Low stock
-                            </span>
-                          )}
-                        </div>
+                return (
+                  <article
+                    key={medicine.id}
+                    className="rounded-2xl border border-[#EAD5D8] bg-[#9DB4C0DFD] p-4 transition hover:-translate-y-0.5 hover:border-[C2DFE3] hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#5C6B73] text-[#8E5A68]">
+                        <Package size={20} />
+                      </div>
+                      <span className="rounded-lg bg-[#9DB4C0] px-2 py-1 text-[10px] font-bold text-[#8E5A68]">
+                        {medicine.category || "Medicine"}
+                      </span>
+                    </div>
 
-                        <div className="mt-4 flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-xs text-slate-400">Stock</p>
-                            <p className={`text-lg font-black ${low ? "text-amber-600" : "text-slate-800"}`}>
-                              {medicine.quantity} units
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-slate-400">Price</p>
-                            <p className="font-bold text-[#3A0CA3]">{money(medicine.unitPrice)}</p>
-                          </div>
-                        </div>
+                    <h2 className="mt-3 line-clamp-2 text-sm font-black text-[#3F2930]">
+                      {medicine.name}
+                    </h2>
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      {medicine.code} • {medicine.manufacturer}
+                    </p>
 
-                        <button
-                          type="button"
-                          onClick={() => addToCart(medicine)}
-                          disabled={Boolean(inCart && inCart.quantity >= Number(medicine.quantity))}
-                          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#3A0CA3] px-3 py-2.5 text-sm font-bold text-white transition hover:bg-[#2f0988] disabled:cursor-not-allowed disabled:opacity-40"
+                    <div className="mt-3 flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-base font-black text-[#6A414B]">
+                          {money(medicine.unitPrice)}
+                        </p>
+                        <p
+                          className={`mt-0.5 text-[11px] font-semibold ${
+                            soldOut ? "text-rose-500" : "text-slate-500"
+                          }`}
                         >
-                          <Plus size={16} />
-                          {inCart ? `Added (${inCart.quantity})` : "Add to bill"}
-                        </button>
+                          Stock: {available}
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-                  <AlertTriangle className="mx-auto text-amber-500" />
-                  <p className="mt-2 text-sm font-bold text-slate-700">
-                    No available medicines found.
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
 
-          <section className="card h-fit print:hidden">
-            <div className="border-b border-slate-100 p-5">
-              <div className="flex items-center gap-2">
-                <ShoppingCart size={19} className="text-[#3A0CA3]" />
-                <h2 className="text-lg font-black text-slate-900">Create bill</h2>
-              </div>
-              <p className="mt-1 text-xs text-slate-400">
-                Enter customer details and generate the invoice.
-              </p>
+                      <button
+                        type="button"
+                        onClick={() => addToCart(medicine)}
+                        disabled={soldOut || Number(inCart?.quantity || 0) >= available}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[C2DFE3] px-3 py-2 text-xs font-extrabold text-[#3F2930] transition hover:bg-[#D7A5B0] disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        <Plus size={15} />
+                        {inCart ? `Added ${inCart.quantity}` : "Add"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
 
-            <form onSubmit={generateBill} className="p-5">
-              {error && (
-                <div className="mb-4 flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700">
-                  <AlertTriangle size={16} className="shrink-0" />
-                  {error}
+            {!medicines.length && (
+              <div className="border-t border-[#EAD5D8] px-5 py-14 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#5C6B73] text-[#A96F7D]">
+                  <Search size={22} />
                 </div>
-              )}
-
-              <div className="grid gap-4">
-                <div>
-                  <label className="label">Customer name *</label>
-                  <input
-                    className="input"
-                    value={customer.name}
-                    onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))}
-                    placeholder="Enter customer name"
-                  />
-                </div>
-
-                <div>
-                  <label className="label">Mobile number *</label>
-                  <input
-                    className="input"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={customer.mobile}
-                    onChange={(e) =>
-                      setCustomer((p) => ({
-                        ...p,
-                        mobile: e.target.value.replace(/\D/g, ""),
-                      }))
-                    }
-                    placeholder="10-digit mobile number"
-                  />
-                </div>
+                <p className="mt-4 text-sm font-extrabold text-[#3F2930]">
+                  No medicines found
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setCategory("all");
+                  }}
+                  className="mt-3 text-xs font-bold text-[#A96F7D] hover:underline"
+                >
+                  Clear filters
+                </button>
               </div>
-
-              <div className="mt-5 border-t border-slate-100 pt-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-bold text-slate-800">Selected medicines</p>
-                  <span className="text-xs font-semibold text-slate-400">
-                    {cart.length} item{cart.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                {cart.length ? (
-                  <div className="space-y-3">
-                    {cart.map((item) => (
-                      <div key={item.medicineId} className="rounded-xl bg-slate-50 p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-bold text-slate-800">{item.name}</p>
-                            <p className="text-[11px] text-slate-400">
-                              {money(item.unitPrice)} each
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => changeQuantity(item.medicineId, 0)}
-                            className="text-rose-500 hover:text-rose-700"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => changeQuantity(item.medicineId, item.quantity - 1)}
-                              className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 bg-white"
-                            >
-                              <Minus size={13} />
-                            </button>
-                            <span className="w-5 text-center text-sm font-bold">{item.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => changeQuantity(item.medicineId, item.quantity + 1)}
-                              className="grid h-7 w-7 place-items-center rounded-lg border border-slate-200 bg-white"
-                            >
-                              <Plus size={13} />
-                            </button>
-                          </div>
-                          <p className="font-black text-slate-800">
-                            {money(item.quantity * item.unitPrice)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs font-semibold text-slate-400">
-                    Add medicines from the list.
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-                <span className="font-bold text-slate-600">Total</span>
-                <span className="text-2xl font-black text-[#3A0CA3]">{money(cartTotal)}</span>
-              </div>
-
-              <button type="submit" className="btn-primary mt-4 w-full">
-                <FileText size={17} />
-                Generate bill
-              </button>
-            </form>
+            )}
           </section>
 
-          {bill && (
-            <Bill bill={bill} onClose={() => setBill(null)} />
-          )}
-        </div>
-
-        {bill && (
-          <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 print:hidden">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="text-emerald-600" size={19} />
-                <p className="text-sm font-bold text-emerald-800">
-                  Bill {bill.invoiceNo} generated successfully. Stock has been reduced.
+          <aside className="h-fit rounded-2xl border border-[#EAD5D8] bg-white shadow-sm lg:sticky lg:top-24">
+            <div className="flex items-center justify-between border-b border-[#EAD5D8] p-4 sm:p-5">
+              <div>
+                <h2 className="text-base font-black text-[#3F2930]">Current Cart</h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {cartCount} item{cartCount === 1 ? "" : "s"} selected
                 </p>
               </div>
-              <button onClick={() => window.print()} className="btn-secondary">
-                <Printer size={16} />
-                Print bill
+              {cart.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearCart}
+                  className="text-xs font-bold text-rose-500 hover:underline"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="max-h-[430px] space-y-3 overflow-y-auto p-4 sm:p-5">
+              {!cart.length ? (
+                <div className="py-10 text-center">
+                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#9DB4C0] text-[#A96F7D]">
+                    <ShoppingCart size={24} />
+                  </div>
+                  <p className="mt-3 text-sm font-bold text-[#3F2930]">
+                    Cart is empty
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Add medicines from the list to start a bill.
+                  </p>
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={item.medicineId}
+                    className="rounded-xl border border-[#EAD5D8] bg-[#9DB4C0DFD] p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-[#3F2930]">
+                          {item.name}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-slate-400">
+                          {money(item.unitPrice)} each
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.medicineId)}
+                        className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500"
+                        title="Remove"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <div className="flex items-center rounded-lg border border-[#EAD5D8] bg-white">
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(item.medicineId, -1)}
+                          className="grid h-8 w-8 place-items-center text-slate-500 hover:bg-[#9DB4C0]"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-8 text-center text-xs font-black text-[#3F2930]">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(item.medicineId, 1)}
+                          className="grid h-8 w-8 place-items-center text-slate-500 hover:bg-[#9DB4C0]"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      <p className="text-sm font-black text-[#6A414B]">
+                        {money(item.quantity * item.unitPrice)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="border-t border-[#EAD5D8] p-4 sm:p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-500">Subtotal</span>
+                <span className="text-xl font-black text-[#3F2930]">
+                  {money(cartTotal)}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={createBill}
+                disabled={!cart.length}
+                className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-4 text-sm font-extrabold text-[#3F2930] transition hover:bg-[#D7A5B0] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continue to Customer Details
+                <ArrowRight size={16} />
               </button>
             </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-
-function Stat({ label, value, warning }) {
-  return (
-    <div className="card p-5">
-      <p className="text-xs font-semibold text-slate-400">{label}</p>
-      <p className={`mt-1 text-2xl font-black ${warning ? "text-amber-600" : "text-slate-900"}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function Bill({ bill }) {
-  return (
-    <div className="bill-print card p-6 xl:col-span-1 print:mx-auto print:block print:max-w-3xl print:border-0 print:shadow-none">
-      <div className="border-b border-slate-200 pb-4 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#3A0CA3]">
-          MediCare
-        </p>
-        <h2 className="mt-1 text-2xl font-black text-slate-900">Sales Invoice</h2>
-        <p className="mt-1 text-xs text-slate-400">{bill.invoiceNo}</p>
-      </div>
-
-      <div className="grid gap-2 border-b border-slate-100 py-4 text-sm sm:grid-cols-2">
-        <p><span className="font-bold">Customer:</span> {bill.customerName}</p>
-        <p><span className="font-bold">Mobile:</span> {bill.customerMobile}</p>
-        <p className="sm:col-span-2"><span className="font-bold">Date:</span> {formatDateTime(bill.createdAt)}</p>
-      </div>
-
-      <div className="mt-5 overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase text-slate-400">
-              <th className="pb-3">Medicine</th>
-              <th className="pb-3 text-center">Qty</th>
-              <th className="pb-3 text-right">Price</th>
-              <th className="pb-3 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {bill.items.map((item) => (
-              <tr key={item.medicineId}>
-                <td className="py-3 font-semibold">{item.name}</td>
-                <td className="py-3 text-center">{item.quantity}</td>
-                <td className="py-3 text-right">{money(item.unitPrice)}</td>
-                <td className="py-3 text-right font-bold">{money(item.total)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-5 flex justify-end border-t border-slate-200 pt-4">
-        <div className="w-full max-w-xs flex items-center justify-between text-lg font-black">
-          <span>Total</span>
-          <span className="text-[#3A0CA3]">{money(bill.total)}</span>
+          </aside>
         </div>
-      </div>
+      </main>
 
-      <p className="mt-8 text-center text-xs text-slate-400">
-        Thank you for visiting MediCare.
-      </p>
+      {/* Prevent accidental stale overlay/close button from trapping clicks. */}
+      <button
+        type="button"
+        aria-label="Close unused dialog"
+        className="hidden"
+        onClick={() => {}}
+      >
+        <X size={1} />
+      </button>
     </div>
   );
 }
