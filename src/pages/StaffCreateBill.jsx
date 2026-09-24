@@ -2,12 +2,9 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
-  CalendarDays,
   CheckCircle2,
-  CreditCard,
   FileText,
   Mail,
-  MapPin,
   Minus,
   Phone,
   Plus,
@@ -18,6 +15,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+
 import { useApp } from "../context/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -68,8 +66,7 @@ const formatDate = (value) => {
 
 const PHARMACY = {
   name: "MediCare Pharmacy",
-  address:
-    "123, Main Road, Coimbatore, Tamil Nadu - 641001",
+  address: "123, Main Road, Coimbatore, Tamil Nadu - 641001",
   phone: "+91 98765 43210",
   email: "medicare@example.com",
   gstin: "33ABCDE1234F1Z5",
@@ -260,39 +257,33 @@ const calculateInvoiceTotals = (items) => {
   const details = items.map(getItemTaxDetails);
 
   const subtotal = details.reduce(
-    (sum, item) =>
-      sum + item.gross,
+    (sum, item) => sum + item.gross,
     0
   );
 
   const discount = details.reduce(
-    (sum, item) =>
-      sum + item.discount,
+    (sum, item) => sum + item.discount,
     0
   );
 
   const taxableAmount = details.reduce(
-    (sum, item) =>
-      sum + item.taxableValue,
+    (sum, item) => sum + item.taxableValue,
     0
   );
 
   const cgst = details.reduce(
-    (sum, item) =>
-      sum + item.cgstAmount,
+    (sum, item) => sum + item.cgstAmount,
     0
   );
 
   const sgst = details.reduce(
-    (sum, item) =>
-      sum + item.sgstAmount,
+    (sum, item) => sum + item.sgstAmount,
     0
   );
 
   const gst = cgst + sgst;
 
-  const grandTotal =
-    taxableAmount + gst;
+  const grandTotal = taxableAmount + gst;
 
   return {
     details,
@@ -316,41 +307,34 @@ export default function StaffCreateBill() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const initialCart =
-    location.state?.cart || [];
+  const initialCart = location.state?.cart || [];
 
-  const [cart, setCart] =
-    useState(() =>
-      initialCart.map((item) => ({
-        ...item,
-        gstRate:
-          item.gstRate ??
-          item.gst ??
-          item.taxRate ??
-          DEFAULT_GST_RATE,
-      }))
-    );
+  const [cart, setCart] = useState(() =>
+    initialCart.map((item) => ({
+      ...item,
+      gstRate:
+        item.gstRate ??
+        item.gst ??
+        item.taxRate ??
+        DEFAULT_GST_RATE,
+    }))
+  );
 
-  const [customer, setCustomer] =
-    useState({
-      name: "",
-      mobile: "",
-    });
+  const [customer, setCustomer] = useState({
+    name: "",
+    mobile: "",
+  });
 
   const [paymentMode, setPaymentMode] =
     useState("Cash");
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
+  const [bill, setBill] = useState(null);
 
-  const [bill, setBill] =
-    useState(null);
-
-  const medicines =
-    data?.medicines || [];
+  const medicines = data?.medicines || [];
 
   /* =======================================================
-     CART TOTAL
+     TOTALS
   ======================================================= */
 
   const cartTotal = useMemo(() => {
@@ -363,18 +347,13 @@ export default function StaffCreateBill() {
     );
   }, [cart]);
 
-  /* =======================================================
-     CART GST PREVIEW
-  ======================================================= */
-
   const cartInvoiceTotals = useMemo(
-    () =>
-      calculateInvoiceTotals(cart),
+    () => calculateInvoiceTotals(cart),
     [cart]
   );
 
   /* =======================================================
-     GO BACK
+     BACK
   ======================================================= */
 
   const goBack = () => {
@@ -389,18 +368,16 @@ export default function StaffCreateBill() {
   };
 
   /* =======================================================
-     CHANGE QUANTITY
+     QUANTITY
   ======================================================= */
 
   const changeQuantity = (
     medicineId,
     nextQuantity
   ) => {
-    const medicine =
-      medicines.find(
-        (item) =>
-          item.id === medicineId
-      );
+    const medicine = medicines.find(
+      (item) => item.id === medicineId
+    );
 
     if (!medicine) return;
 
@@ -408,8 +385,7 @@ export default function StaffCreateBill() {
       setCart((current) =>
         current.filter(
           (item) =>
-            item.medicineId !==
-            medicineId
+            item.medicineId !== medicineId
         )
       );
 
@@ -428,12 +404,10 @@ export default function StaffCreateBill() {
 
     setCart((current) =>
       current.map((item) =>
-        item.medicineId ===
-        medicineId
+        item.medicineId === medicineId
           ? {
               ...item,
-              quantity:
-                safeQuantity,
+              quantity: safeQuantity,
             }
           : item
       )
@@ -441,7 +415,7 @@ export default function StaffCreateBill() {
   };
 
   /* =======================================================
-     CHANGE GST
+     GST
   ======================================================= */
 
   const changeGstRate = (
@@ -461,8 +435,7 @@ export default function StaffCreateBill() {
 
     setCart((current) =>
       current.map((item) =>
-        item.medicineId ===
-        medicineId
+        item.medicineId === medicineId
           ? {
               ...item,
               gstRate: gstValue,
@@ -507,19 +480,12 @@ export default function StaffCreateBill() {
     }
 
     try {
-      /*
-       * Keep GST rate inside the cart items so the
-       * professional invoice can use the edited rate.
-       */
-      const billCart = cart.map(
-        (item) => ({
-          ...item,
-          gstRate: Number(
-            item.gstRate ??
-              DEFAULT_GST_RATE
-          ),
-        })
-      );
+      const billCart = cart.map((item) => ({
+        ...item,
+        gstRate: Number(
+          item.gstRate ?? DEFAULT_GST_RATE
+        ),
+      }));
 
       const result = createSale(
         customer,
@@ -534,11 +500,6 @@ export default function StaffCreateBill() {
         return;
       }
 
-      /*
-       * Use the edited cart for the invoice preview.
-       * This ensures the GST percentage entered by
-       * the staff is shown correctly.
-       */
       const sale = result.sale || {};
 
       setBill({
@@ -576,12 +537,13 @@ export default function StaffCreateBill() {
   };
 
   return (
-    <div className="min-h-screen bg-[#9DB4C0]">
+    <div className="min-h-screen bg-[#F4F7F8]">
       <style>{`
         @keyframes billOverlay {
           from {
             opacity: 0;
           }
+
           to {
             opacity: 1;
           }
@@ -590,7 +552,7 @@ export default function StaffCreateBill() {
         @keyframes billPopup {
           from {
             opacity: 0;
-            transform: translateY(20px) scale(0.97);
+            transform: translateY(18px) scale(0.98);
           }
 
           to {
@@ -602,11 +564,11 @@ export default function StaffCreateBill() {
         @keyframes successPop {
           0% {
             opacity: 0;
-            transform: scale(0.5);
+            transform: scale(0.6);
           }
 
           70% {
-            transform: scale(1.1);
+            transform: scale(1.08);
           }
 
           100% {
@@ -627,52 +589,58 @@ export default function StaffCreateBill() {
           animation: successPop 0.45s ease-out;
         }
 
-        .label {
-          display: block;
-          margin-bottom: 6px;
-          font-size: 12px;
-          font-weight: 800;
-          color: #6f5a60;
-        }
-
-        .input {
+        .billing-input {
           width: 100%;
-          border-radius: 11px;
-          border: 1px solid #ead5d8;
-          background: white;
-          padding: 10px 12px;
+          border-radius: 12px;
+          border: 1px solid #D7E1E4;
+          background: #FFFFFF;
+          padding: 11px 13px;
           font-size: 13px;
           outline: none;
-          color: #3f2930;
-          transition: 0.2s;
+          color: #263238;
+          transition: all 0.2s ease;
         }
 
-        .input:focus {
-          border-color: #d7a5b0;
-          box-shadow: 0 0 0 3px rgba(226, 180, 189, 0.2);
+        .billing-input::placeholder {
+          color: #9AA8AD;
+        }
+
+        .billing-input:focus {
+          border-color: #6B8792;
+          box-shadow: 0 0 0 3px rgba(107, 135, 146, 0.12);
+        }
+
+        .billing-label {
+          display: block;
+          margin-bottom: 7px;
+          font-size: 11px;
+          font-weight: 800;
+          color: #53666E;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
 
         .gst-input {
           width: 72px;
-          border-radius: 8px;
-          border: 1px solid #dfc3c8;
+          border-radius: 9px;
+          border: 1px solid #D7E1E4;
           background: white;
-          padding: 6px 7px;
+          padding: 7px;
           text-align: center;
           font-size: 12px;
           font-weight: 800;
-          color: #5e3c45;
+          color: #344850;
           outline: none;
         }
 
         .gst-input:focus {
-          border-color: #c78d9a;
-          box-shadow: 0 0 0 2px rgba(226, 180, 189, 0.25);
+          border-color: #6B8792;
+          box-shadow: 0 0 0 2px rgba(107, 135, 146, 0.12);
         }
 
         .invoice-scroll {
           scrollbar-width: thin;
-          scrollbar-color: #d7a5b0 #9DB4C0;
+          scrollbar-color: #A8BAC1 #EEF2F3;
         }
 
         @media print {
@@ -711,22 +679,28 @@ export default function StaffCreateBill() {
           HEADER
       =================================================== */}
 
-      <header className="sticky top-0 z-30 border-b border-[#EAD5D8] bg-white/95 shadow-sm backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-[1150px] items-center justify-between px-4 sm:h-[70px] sm:px-6">
-          <div>
-            <p className="text-lg font-black text-[#3F2930]">
-              MediCare
-            </p>
+      <header className="sticky top-0 z-30 border-b border-[#DDE6E8] bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex h-[68px] max-w-[1180px] items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#415A63] text-white shadow-sm">
+              <ShieldCheck size={20} />
+            </div>
 
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A88F95]">
-              Staff Billing
-            </p>
+            <div>
+              <p className="text-base font-black tracking-tight text-[#263238]">
+                MediCare
+              </p>
+
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#7A8C93]">
+                Staff Billing
+              </p>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#EAD5D8] bg-white px-3 py-2 text-xs font-bold text-[#6A414B] transition hover:border-[C2DFE3] hover:bg-[#9DB4C0] sm:px-4 sm:text-sm"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#D7E1E4] bg-white px-3.5 py-2.5 text-xs font-bold text-[#52666E] transition hover:border-[#9DB4BC] hover:bg-[#F4F7F8] sm:text-sm"
           >
             <ArrowLeft size={16} />
             Back
@@ -738,107 +712,146 @@ export default function StaffCreateBill() {
           MAIN
       =================================================== */}
 
-      <main className="mx-auto max-w-[1150px] px-3 py-5 sm:px-6 sm:py-7">
-        <div className="mb-5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#5C6B73] text-[#A96F7D] shadow-sm">
+      <main className="mx-auto max-w-[1180px] px-3 py-6 sm:px-6 sm:py-8">
+        {/* PAGE TITLE */}
+
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E4EEF0] text-[#526D77]">
               <FileText size={21} />
             </div>
 
             <div>
-              <h1 className="text-xl font-black text-[#3F2930] sm:text-2xl">
+              <h1 className="text-xl font-black tracking-tight text-[#263238] sm:text-2xl">
                 Create Bill
               </h1>
 
-              <p className="mt-1 text-xs text-[#8F7A80] sm:text-sm">
-                Add medicines, adjust GST and generate the invoice.
+              <p className="mt-1 text-xs text-[#7A8C93] sm:text-sm">
+                Create a professional invoice for your customer.
               </p>
             </div>
           </div>
+
+          {cart.length > 0 && (
+            <div className="hidden rounded-xl border border-[#D7E1E4] bg-white px-3 py-2 text-right shadow-sm sm:block">
+              <p className="text-[9px] font-bold uppercase tracking-wide text-[#8A9BA1]">
+                Items
+              </p>
+
+              <p className="text-lg font-black text-[#344850]">
+                {cart.reduce(
+                  (sum, item) =>
+                    sum +
+                    Number(item.quantity || 0),
+                  0
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* =================================================
             EMPTY CART
         ================================================= */}
 
-        {!initialCart.length &&
-        !cart.length ? (
-          <div className="rounded-2xl border border-[#EAD5D8] bg-white p-8 text-center shadow-sm sm:p-12">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#5C6B73] text-[#A96F7D]">
-              <ShoppingCart size={30} />
+        {!initialCart.length && !cart.length ? (
+          <div className="rounded-2xl border border-[#DDE6E8] bg-white px-6 py-14 text-center shadow-sm sm:px-12">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#E8F0F2] text-[#607982]">
+              <ShoppingCart size={29} />
             </div>
 
-            <h2 className="mt-4 text-lg font-black text-[#3F2930]">
+            <h2 className="mt-5 text-lg font-black text-[#263238]">
               No medicines selected
             </h2>
 
-            <p className="mt-1 text-sm text-[#8F7A80]">
-              Please select medicines before creating a bill.
+            <p className="mx-auto mt-1 max-w-md text-sm text-[#84949A]">
+              Select medicines from the inventory before creating a bill.
             </p>
 
             <button
               type="button"
               onClick={goBack}
-              className="mx-auto mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-5 py-2.5 text-sm font-extrabold text-[#3F2930] shadow-sm transition hover:bg-[#D7A5B0]"
+              className="mx-auto mt-6 inline-flex items-center gap-2 rounded-xl bg-[#415A63] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#344A52] hover:shadow-md"
             >
               <ArrowLeft size={16} />
               Back to medicines
             </button>
           </div>
         ) : (
-          <div className="grid gap-5 lg:grid-cols-[1fr_390px]">
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* =================================================
-                MEDICINES
+                LEFT - MEDICINES
             ================================================= */}
 
-            <section className="overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
-              <div className="border-b border-[#EAD5D8] bg-gradient-to-r from-[#9DB4C0] to-white p-4 sm:p-5">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[C2DFE3] text-[#5E3C45]">
-                    <ShoppingCart size={18} />
+            <section className="overflow-hidden rounded-2xl border border-[#DDE6E8] bg-white shadow-sm">
+              {/* SECTION HEADER */}
+
+              <div className="border-b border-[#E4EAEC] bg-[#FAFCFC] px-4 py-4 sm:px-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#E4EEF0] text-[#536E78]">
+                      <ShoppingCart size={18} />
+                    </div>
+
+                    <div>
+                      <h2 className="text-base font-black text-[#263238] sm:text-lg">
+                        Selected Medicines
+                      </h2>
+
+                      <p className="mt-0.5 text-[11px] text-[#84949A]">
+                        Adjust quantity and GST before billing.
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h2 className="text-lg font-black text-[#3F2930]">
-                      Selected Medicines
-                    </h2>
-
-                    <p className="mt-0.5 text-xs text-[#8F7A80]">
-                      Adjust quantity and GST before generating the bill.
-                    </p>
-                  </div>
+                  <span className="rounded-full bg-[#EEF3F4] px-3 py-1 text-[10px] font-extrabold text-[#60747C]">
+                    {cart.length}{" "}
+                    {cart.length === 1
+                      ? "Medicine"
+                      : "Medicines"}
+                  </span>
                 </div>
               </div>
 
+              {/* MEDICINE LIST */}
+
               <div className="space-y-3 p-4 sm:p-5">
-                {cart.map((item) => {
+                {cart.map((item, index) => {
                   const itemTax =
-                    getItemTaxDetails(
-                      item
-                    );
+                    getItemTaxDetails(item);
 
                   return (
                     <div
-                      key={
-                        item.medicineId
-                      }
-                      className="rounded-xl border border-[#EAD5D8] bg-[#9DB4C09F9] p-3 transition hover:border-[C2DFE3] sm:p-4"
+                      key={item.medicineId}
+                      className="rounded-2xl border border-[#E0E8EA] bg-[#FBFCFC] p-4 transition hover:border-[#B9C9CE] hover:shadow-sm"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-bold text-[#3F2930]">
-                            {item.name}
-                          </p>
+                      {/* TOP */}
 
-                          <p className="mt-1 text-xs text-[#8F7A80]">
-                            {item.code ||
-                              "No code"}{" "}
-                            •{" "}
-                            {money(
-                              item.unitPrice
-                            )}{" "}
-                            each
-                          </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#415A63] text-sm font-black text-white">
+                            {index + 1}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-black text-[#263238]">
+                              {item.name}
+                            </p>
+
+                            <p className="mt-1 text-[11px] text-[#87979D]">
+                              {item.code ||
+                                "No medicine code"}
+                            </p>
+
+                            <p className="mt-0.5 text-[11px] text-[#87979D]">
+                              Unit price:{" "}
+                              <span className="font-bold text-[#566A72]">
+                                {money(
+                                  item.unitPrice
+                                )}
+                              </span>
+                            </p>
+                          </div>
                         </div>
 
                         <button
@@ -849,24 +862,28 @@ export default function StaffCreateBill() {
                               0
                             )
                           }
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-rose-500 transition hover:bg-rose-50"
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#A86C72] transition hover:bg-[#FBECEE] hover:text-[#9B565E]"
                           title="Remove medicine"
                         >
-                          <Trash2
-                            size={16}
-                          />
+                          <Trash2 size={16} />
                         </button>
                       </div>
 
-                      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                      {/* DIVIDER */}
+
+                      <div className="my-4 h-px bg-[#E7ECEE]" />
+
+                      {/* CONTROLS */}
+
+                      <div className="grid gap-4 sm:grid-cols-3">
                         {/* QUANTITY */}
 
                         <div>
-                          <p className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-[#9B858B]">
+                          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#89999F]">
                             Quantity
                           </p>
 
-                          <div className="flex items-center gap-2">
+                          <div className="inline-flex items-center rounded-xl border border-[#D8E2E5] bg-white p-1">
                             <button
                               type="button"
                               onClick={() =>
@@ -877,17 +894,13 @@ export default function StaffCreateBill() {
                                   ) - 1
                                 )
                               }
-                              className="grid h-8 w-8 place-items-center rounded-lg border border-[#EAD5D8] bg-white text-[#6F5A60] transition hover:bg-[#5C6B73]"
+                              className="grid h-8 w-8 place-items-center rounded-lg text-[#536970] transition hover:bg-[#EDF2F3]"
                             >
-                              <Minus
-                                size={14}
-                              />
+                              <Minus size={14} />
                             </button>
 
-                            <span className="w-7 text-center text-sm font-extrabold text-[#3F2930]">
-                              {
-                                item.quantity
-                              }
+                            <span className="w-9 text-center text-sm font-black text-[#263238]">
+                              {item.quantity}
                             </span>
 
                             <button
@@ -900,11 +913,9 @@ export default function StaffCreateBill() {
                                   ) + 1
                                 )
                               }
-                              className="grid h-8 w-8 place-items-center rounded-lg border border-[#EAD5D8] bg-white text-[#6F5A60] transition hover:bg-[#5C6B73]"
+                              className="grid h-8 w-8 place-items-center rounded-lg text-[#536970] transition hover:bg-[#EDF2F3]"
                             >
-                              <Plus
-                                size={14}
-                              />
+                              <Plus size={14} />
                             </button>
                           </div>
                         </div>
@@ -912,11 +923,11 @@ export default function StaffCreateBill() {
                         {/* GST */}
 
                         <div>
-                          <p className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-[#9B858B]">
-                            GST %
+                          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#89999F]">
+                            GST Rate
                           </p>
 
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2">
                             <input
                               type="number"
                               min="0"
@@ -929,14 +940,13 @@ export default function StaffCreateBill() {
                               onChange={(e) =>
                                 changeGstRate(
                                   item.medicineId,
-                                  e.target
-                                    .value
+                                  e.target.value
                                 )
                               }
                               className="gst-input"
                             />
 
-                            <span className="text-xs font-bold text-[#6F5A60]">
+                            <span className="text-xs font-bold text-[#667980]">
                               %
                             </span>
                           </div>
@@ -944,112 +954,135 @@ export default function StaffCreateBill() {
 
                         {/* TAX */}
 
-                        <div className="rounded-lg bg-white px-3 py-2">
-                          <p className="text-[9px] font-bold uppercase text-[#9B858B]">
-                            CGST / SGST
+                        <div>
+                          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-[#89999F]">
+                            Tax Split
                           </p>
 
-                          <p className="mt-0.5 text-xs font-black text-[#6A414B]">
-                            {
-                              itemTax.cgstRate
-                            }
-                            % /{" "}
-                            {
-                              itemTax.sgstRate
-                            }%
+                          <div className="inline-flex rounded-xl bg-[#EEF4F5] px-3 py-2">
+                            <span className="text-xs font-black text-[#526970]">
+                              CGST{" "}
+                              {itemTax.cgstRate}%
+                            </span>
+
+                            <span className="mx-2 text-[#B2C0C4]">
+                              /
+                            </span>
+
+                            <span className="text-xs font-black text-[#526970]">
+                              SGST{" "}
+                              {itemTax.sgstRate}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* AMOUNT */}
+
+                      <div className="mt-4 flex items-center justify-between rounded-xl bg-[#F0F5F6] px-3.5 py-3">
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#8A9BA1]">
+                            Item Total
+                          </p>
+
+                          <p className="mt-0.5 text-[11px] text-[#71848B]">
+                            Including GST
                           </p>
                         </div>
 
-                        {/* AMOUNT */}
-
-                        <div className="text-left sm:text-right">
-                          <p className="text-[10px] font-bold uppercase text-[#9B858B]">
-                            Amount
-                          </p>
-
-                          <p className="font-black text-[#6A414B]">
-                            {money(
-                              itemTax.total
-                            )}
-                          </p>
-                        </div>
+                        <p className="text-base font-black text-[#344F58]">
+                          {money(itemTax.total)}
+                        </p>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* CART TOTAL */}
+                {/* CART SUMMARY */}
 
-                <div className="rounded-xl border border-[#EAD5D8] bg-[#9DB4C0] p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-[#6F5A60]">
-                      Subtotal
-                    </span>
+                <div className="rounded-2xl border border-[#D8E3E6] bg-[#F5F8F9] p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-xs font-black uppercase tracking-wider text-[#536870]">
+                      Bill Summary
+                    </p>
 
-                    <span className="font-black text-[#A96F7D]">
-                      {money(
-                        cartTotal
-                      )}
-                    </span>
+                    <FileText
+                      size={16}
+                      className="text-[#82949A]"
+                    />
                   </div>
 
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs text-[#8F7A80]">
-                      Taxable Amount
-                    </span>
+                  <div className="space-y-2.5">
+                    <SummaryRow
+                      label="Subtotal"
+                      value={money(cartTotal)}
+                    />
 
-                    <span className="text-sm font-bold text-[#3F2930]">
-                      {money(
+                    <SummaryRow
+                      label="Discount"
+                      value={`- ${money(
+                        cartInvoiceTotals.discount
+                      )}`}
+                    />
+
+                    <SummaryRow
+                      label="Taxable Amount"
+                      value={money(
                         cartInvoiceTotals.taxableAmount
                       )}
-                    </span>
-                  </div>
+                    />
 
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs text-[#8F7A80]">
-                      Total GST
-                    </span>
-
-                    <span className="text-sm font-bold text-[#6A414B]">
-                      {money(
+                    <SummaryRow
+                      label="Total GST"
+                      value={money(
                         cartInvoiceTotals.gst
                       )}
-                    </span>
+                    />
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[#EAD5D8] pt-3">
-                    <span className="font-black text-[#3F2930]">
-                      Invoice Total
-                    </span>
+                  <div className="mt-4 border-t border-[#D8E2E5] pt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#7E9096]">
+                          Invoice Total
+                        </p>
 
-                    <span className="text-xl font-black text-[#A96F7D]">
-                      {money(
-                        cartInvoiceTotals.grandTotal
-                      )}
-                    </span>
+                        <p className="mt-0.5 text-xs text-[#8C9BA0]">
+                          Final amount payable
+                        </p>
+                      </div>
+
+                      <p className="text-2xl font-black tracking-tight text-[#344F58]">
+                        {money(
+                          cartInvoiceTotals.grandTotal
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
 
             {/* =================================================
-                CUSTOMER
+                RIGHT - CUSTOMER
             ================================================= */}
 
-            <section className="h-fit overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
-              <div className="border-b border-[#EAD5D8] bg-gradient-to-r from-[#9DB4C0] to-white p-4 sm:p-5">
+            <section className="overflow-hidden rounded-2xl border border-[#DDE6E8] bg-white shadow-sm">
+              {/* HEADER */}
+
+              <div className="border-b border-[#E4EAEC] bg-[#FAFCFC] px-4 py-4 sm:px-5">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#5C6B73] text-[#A96F7D]">
-                    <UserRound size={17} />
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#E4EEF0] text-[#536E78]">
+                    <UserRound size={18} />
                   </div>
 
                   <div>
-                    <h2 className="text-lg font-black text-[#3F2930]">
+                    <h2 className="text-base font-black text-[#263238] sm:text-lg">
                       Customer Details
                     </h2>
 
-                    <p className="mt-1 text-xs text-[#8F7A80]">
-                      Enter customer information.
+                    <p className="mt-0.5 text-[11px] text-[#84949A]">
+                      Enter billing information.
                     </p>
                   </div>
                 </div>
@@ -1059,8 +1092,10 @@ export default function StaffCreateBill() {
                 onSubmit={generateBill}
                 className="p-4 sm:p-5"
               >
+                {/* ERROR */}
+
                 {error && (
-                  <div className="mb-4 flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700">
+                  <div className="mb-4 flex gap-2.5 rounded-xl border border-[#F2C8CC] bg-[#FFF5F6] p-3 text-xs font-semibold text-[#A44F58]">
                     <AlertTriangle
                       size={16}
                       className="mt-0.5 shrink-0"
@@ -1071,71 +1106,84 @@ export default function StaffCreateBill() {
                 )}
 
                 <div className="space-y-4">
+                  {/* NAME */}
+
                   <div>
-                    <label className="label">
-                      Customer Name *
+                    <label className="billing-label">
+                      Customer Name
                     </label>
 
-                    <input
-                      className="input"
-                      value={
-                        customer.name
-                      }
-                      onChange={(e) => {
-                        setCustomer(
-                          (previous) => ({
-                            ...previous,
-                            name: e.target
-                              .value,
-                          })
-                        );
+                    <div className="relative">
+                      <UserRound
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0ADB1]"
+                      />
 
-                        setError("");
-                      }}
-                      placeholder="Enter customer name"
-                    />
+                      <input
+                        className="billing-input pl-10"
+                        value={customer.name}
+                        onChange={(e) => {
+                          setCustomer(
+                            (previous) => ({
+                              ...previous,
+                              name: e.target.value,
+                            })
+                          );
+
+                          setError("");
+                        }}
+                        placeholder="Enter customer name"
+                      />
+                    </div>
                   </div>
 
+                  {/* MOBILE */}
+
                   <div>
-                    <label className="label">
-                      Mobile Number *
+                    <label className="billing-label">
+                      Mobile Number
                     </label>
 
-                    <input
-                      className="input"
-                      inputMode="numeric"
-                      maxLength={10}
-                      value={
-                        customer.mobile
-                      }
-                      onChange={(e) => {
-                        setCustomer(
-                          (previous) => ({
-                            ...previous,
-                            mobile:
-                              e.target.value.replace(
-                                /\D/g,
-                                ""
-                              ),
-                          })
-                        );
+                    <div className="relative">
+                      <Phone
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0ADB1]"
+                      />
 
-                        setError("");
-                      }}
-                      placeholder="10-digit mobile number"
-                    />
+                      <input
+                        className="billing-input pl-10"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={customer.mobile}
+                        onChange={(e) => {
+                          setCustomer(
+                            (previous) => ({
+                              ...previous,
+                              mobile:
+                                e.target.value.replace(
+                                  /\D/g,
+                                  ""
+                                ),
+                            })
+                          );
+
+                          setError("");
+                        }}
+                        placeholder="10-digit mobile number"
+                      />
+                    </div>
                   </div>
 
+                  {/* PAYMENT */}
+
                   <div>
-                    <label className="label">
+                    <label className="billing-label">
                       Payment Mode
                     </label>
 
                     <select
-                      className="input"
-                      value={
-                        paymentMode
-                      }
+                      className="billing-input"
+                      value={paymentMode}
                       onChange={(e) =>
                         setPaymentMode(
                           e.target.value
@@ -1161,82 +1209,90 @@ export default function StaffCreateBill() {
                   </div>
                 </div>
 
-                {/* GST NOTE */}
+                {/* GST INFORMATION */}
 
-                <div className="mt-5 rounded-xl border border-[#EAD5D8] bg-[#9DB4C0] p-4">
+                <div className="mt-5 rounded-2xl border border-[#DDE7E9] bg-[#F4F8F9] p-4">
                   <div className="flex items-start gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#5C6B73] text-[#A96F7D]">
-                      <ShieldCheck
-                        size={16}
-                      />
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#E1ECEE] text-[#526D76]">
+                      <ShieldCheck size={17} />
                     </div>
 
                     <div>
-                      <p className="text-xs font-black text-[#3F2930]">
+                      <p className="text-xs font-black text-[#344850]">
                         GST Editable
                       </p>
 
-                      <p className="mt-1 text-[11px] leading-4 text-[#8F7A80]">
-                        Staff can edit the GST percentage for each medicine before generating the invoice.
+                      <p className="mt-1 text-[10px] leading-4 text-[#7D8E94]">
+                        GST can be adjusted individually for each medicine before generating the invoice.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* SUMMARY */}
+                {/* QUICK SUMMARY */}
 
-                <div className="mt-4 rounded-xl border border-[#EAD5D8] bg-white p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#8F7A80]">
-                      Items
-                    </span>
+                <div className="mt-4 rounded-2xl border border-[#E0E7E9] bg-white p-4">
+                  <p className="mb-3 text-[10px] font-black uppercase tracking-wider text-[#71838A]">
+                    Invoice Summary
+                  </p>
 
-                    <span className="font-bold text-[#3F2930]">
-                      {cart.reduce(
+                  <div className="space-y-2.5">
+                    <SummaryRow
+                      label="Total Items"
+                      value={cart.reduce(
                         (sum, item) =>
                           sum +
                           Number(
-                            item.quantity ||
-                              0
+                            item.quantity || 0
                           ),
                         0
                       )}
-                    </span>
-                  </div>
+                    />
 
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs text-[#8F7A80]">
-                      GST
-                    </span>
-
-                    <span className="font-bold text-[#6A414B]">
-                      {money(
+                    <SummaryRow
+                      label="GST"
+                      value={money(
                         cartInvoiceTotals.gst
                       )}
-                    </span>
+                    />
+
+                    <SummaryRow
+                      label="Taxable Amount"
+                      value={money(
+                        cartInvoiceTotals.taxableAmount
+                      )}
+                    />
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[#EAD5D8] pt-3">
-                    <span className="font-black text-[#3F2930]">
-                      Total
-                    </span>
+                  <div className="mt-4 rounded-xl bg-[#415A63] px-4 py-3.5 text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold">
+                        Total Payable
+                      </span>
 
-                    <span className="text-xl font-black text-[#A96F7D]">
-                      {money(
-                        cartInvoiceTotals.grandTotal
-                      )}
-                    </span>
+                      <span className="text-lg font-black">
+                        {money(
+                          cartInvoiceTotals.grandTotal
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* GENERATE */}
 
                 <button
                   type="submit"
                   disabled={!cart.length}
-                  className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-4 text-sm font-extrabold text-[#3F2930] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#D7A5B0] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#415A63] px-4 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#344A52] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <FileText size={17} />
                   Generate Bill
                 </button>
+
+                <p className="mt-3 text-center text-[10px] leading-4 text-[#98A5A9]">
+                  Review the customer details and invoice amount before generating.
+                </p>
               </form>
             </section>
           </div>
@@ -1244,28 +1300,26 @@ export default function StaffCreateBill() {
       </main>
 
       {/* =====================================================
-          BILL PREVIEW
+          BILL PREVIEW MODAL
       ===================================================== */}
 
       {bill && (
-        <div className="bill-overlay-animation fixed inset-0 z-[100] flex items-center justify-center bg-[#3F2930]/70 p-1.5 backdrop-blur-sm sm:p-3">
-          <div className="bill-popup-animation relative flex h-[94vh] w-full max-w-[1180px] flex-col overflow-hidden rounded-2xl border border-[#EAD5D8] bg-[#9DB4C0] shadow-2xl">
-            {/* PREVIEW HEADER */}
+        <div className="bill-overlay-animation fixed inset-0 z-[100] flex items-center justify-center bg-[#263238]/75 p-2 backdrop-blur-sm sm:p-4">
+          <div className="bill-popup-animation relative flex h-[96vh] w-full max-w-[1180px] flex-col overflow-hidden rounded-2xl border border-[#D7E1E4] bg-[#F4F7F8] shadow-2xl">
+            {/* MODAL HEADER */}
 
-            <div className="no-print flex shrink-0 items-center justify-between border-b border-[#EAD5D8] bg-white px-3 py-2.5 sm:px-5 sm:py-3">
-              <div className="flex items-center gap-2.5">
-                <div className="success-icon-animation grid h-8 w-8 place-items-center rounded-full bg-[#5C6B73] text-[#A96F7D]">
-                  <CheckCircle2
-                    size={18}
-                  />
+            <div className="no-print flex shrink-0 items-center justify-between border-b border-[#DDE5E7] bg-white px-3 py-3 sm:px-5">
+              <div className="flex items-center gap-3">
+                <div className="success-icon-animation grid h-9 w-9 place-items-center rounded-full bg-[#E5F1EC] text-[#3E8060]">
+                  <CheckCircle2 size={19} />
                 </div>
 
                 <div>
-                  <p className="text-xs font-black text-[#3F2930] sm:text-sm">
+                  <p className="text-xs font-black text-[#263238] sm:text-sm">
                     Bill Generated Successfully
                   </p>
 
-                  <p className="text-[10px] text-[#8F7A80]">
+                  <p className="mt-0.5 text-[10px] text-[#84949A]">
                     {bill.invoiceNo ||
                       "Invoice Generated"}
                   </p>
@@ -1274,10 +1328,8 @@ export default function StaffCreateBill() {
 
               <button
                 type="button"
-                onClick={() =>
-                  setBill(null)
-                }
-                className="grid h-8 w-8 place-items-center rounded-lg bg-[#9DB4C0] text-[#7E6A70] transition hover:bg-[#5C6B73]"
+                onClick={() => setBill(null)}
+                className="grid h-8 w-8 place-items-center rounded-lg bg-[#F1F4F5] text-[#718188] transition hover:bg-[#E7ECEE] hover:text-[#344850]"
               >
                 <X size={16} />
               </button>
@@ -1285,23 +1337,19 @@ export default function StaffCreateBill() {
 
             {/* INVOICE */}
 
-            <div className="invoice-scroll min-h-0 flex-1 overflow-auto p-1.5 sm:p-3">
+            <div className="invoice-scroll min-h-0 flex-1 overflow-auto p-2 sm:p-4">
               <div className="print-bill">
-                <ProfessionalBill
-                  bill={bill}
-                />
+                <ProfessionalBill bill={bill} />
               </div>
             </div>
 
-            {/* FOOTER BUTTONS */}
+            {/* FOOTER */}
 
-            <div className="no-print flex shrink-0 flex-col gap-2 border-t border-[#EAD5D8] bg-white p-2.5 sm:flex-row sm:justify-end sm:p-3">
+            <div className="no-print flex shrink-0 flex-col gap-2 border-t border-[#DDE5E7] bg-white p-2.5 sm:flex-row sm:justify-end sm:p-3">
               <button
                 type="button"
-                onClick={() =>
-                  setBill(null)
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#EAD5D8] bg-white px-4 py-2 text-xs font-bold text-[#6F5A60] transition hover:bg-[#9DB4C0] sm:text-sm"
+                onClick={() => setBill(null)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D7E1E4] bg-white px-4 py-2.5 text-xs font-bold text-[#62757D] transition hover:bg-[#F4F7F8] sm:text-sm"
               >
                 <X size={15} />
                 Close
@@ -1309,10 +1357,8 @@ export default function StaffCreateBill() {
 
               <button
                 type="button"
-                onClick={() =>
-                  window.print()
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-4 py-2 text-xs font-extrabold text-[#3F2930] shadow-sm transition hover:bg-[#D7A5B0] sm:text-sm"
+                onClick={() => window.print()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#415A63] px-5 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-[#344A52] sm:text-sm"
               >
                 <Printer size={15} />
                 Print Invoice
@@ -1326,101 +1372,102 @@ export default function StaffCreateBill() {
 }
 
 /* =========================================================
+   SUMMARY ROW
+========================================================= */
+
+function SummaryRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-xs text-[#7A8B91]">
+        {label}
+      </span>
+
+      <span className="text-xs font-bold text-[#40545C]">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* =========================================================
    PROFESSIONAL BILL
 ========================================================= */
 
 function ProfessionalBill({ bill }) {
-  const items = Array.isArray(
-    bill?.items
-  )
+  const items = Array.isArray(bill?.items)
     ? bill.items
     : [];
 
-  const totals =
-    calculateInvoiceTotals(items);
+  const totals = calculateInvoiceTotals(items);
 
-  const roundedTotal =
-    Math.round(
-      totals.grandTotal
-    );
+  const roundedTotal = Math.round(
+    totals.grandTotal
+  );
 
   const roundOff =
-    roundedTotal -
-    totals.grandTotal;
-
-  /* =======================================================
-     TAX GROUPS
-  ======================================================= */
+    roundedTotal - totals.grandTotal;
 
   const taxGroups = useMemo(() => {
     const groups = {};
 
-    totals.details.forEach(
-      (item) => {
-        const rate =
-          Number(item.gstRate || 0);
+    totals.details.forEach((item) => {
+      const rate = Number(item.gstRate || 0);
 
-        if (!groups[rate]) {
-          groups[rate] = {
-            rate,
-            taxable: 0,
-            cgst: 0,
-            sgst: 0,
-            gst: 0,
-          };
-        }
-
-        groups[rate].taxable +=
-          item.taxableValue;
-
-        groups[rate].cgst +=
-          item.cgstAmount;
-
-        groups[rate].sgst +=
-          item.sgstAmount;
-
-        groups[rate].gst +=
-          item.gstAmount;
+      if (!groups[rate]) {
+        groups[rate] = {
+          rate,
+          taxable: 0,
+          cgst: 0,
+          sgst: 0,
+          gst: 0,
+        };
       }
-    );
 
-    return Object.values(
-      groups
-    ).sort(
-      (a, b) =>
-        a.rate - b.rate
+      groups[rate].taxable +=
+        item.taxableValue;
+
+      groups[rate].cgst +=
+        item.cgstAmount;
+
+      groups[rate].sgst +=
+        item.sgstAmount;
+
+      groups[rate].gst +=
+        item.gstAmount;
+    });
+
+    return Object.values(groups).sort(
+      (a, b) => a.rate - b.rate
     );
   }, [items]);
 
   return (
-    <div className="invoice-page mx-auto w-full max-w-[1080px] overflow-hidden rounded-lg border border-[#D8C4C8] bg-white text-[#2F2428] shadow-md">
+    <div className="invoice-page mx-auto w-full max-w-[1080px] overflow-hidden rounded-xl border border-[#D4DEE1] bg-white text-[#2F3B40] shadow-lg">
       {/* ===================================================
-          COMPACT HEADER
+          HEADER
       =================================================== */}
 
-      <div className="border-b border-[#3F2930] bg-white px-4 py-4 sm:px-5 sm:py-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border-b-2 border-[#344850] bg-white px-5 py-5 sm:px-7">
+        <div className="flex items-start justify-between gap-5">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#5C6B73] text-[#A96F7D]">
-              <ShieldCheck
-                size={23}
-              />
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#415A63] text-white">
+              <ShieldCheck size={24} />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#A96F7D]">
+              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#718890]">
                 Trusted Pharmacy
               </p>
 
-              <h1 className="text-lg font-black text-[#3F2930] sm:text-xl">
+              <h1 className="text-xl font-black text-[#263238]">
                 {PHARMACY.name}
               </h1>
 
-              <p className="mt-0.5 max-w-[520px] text-[9px] leading-4 text-[#6F5A60]">
+              <p className="mt-1 max-w-[520px] text-[9px] leading-4 text-[#697B82]">
                 {PHARMACY.address}
               </p>
 
-              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[8px] text-[#6F5A60]">
+              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[8px] text-[#697B82]">
                 <span className="inline-flex items-center gap-1">
                   <Phone size={9} />
                   {PHARMACY.phone}
@@ -1434,21 +1481,19 @@ function ProfessionalBill({ bill }) {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-lg border border-[#EAD5D8] bg-[#9DB4C0] px-3 py-2.5 text-right">
-            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-[#A96F7D]">
+          <div className="shrink-0 rounded-xl border border-[#D8E2E5] bg-[#F3F7F8] px-4 py-3 text-right">
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-[#718890]">
               Tax Invoice
             </p>
 
-            <p className="mt-0.5 text-base font-black text-[#3F2930]">
+            <p className="mt-0.5 text-lg font-black text-[#263238]">
               {bill.invoiceNo ||
                 "INV-000001"}
             </p>
 
-            <p className="mt-1 text-[8px] text-[#6F5A60]">
-              {formatDate(
-                bill.createdAt
-              )}{" "}
-              •{" "}
+            <p className="mt-1 text-[8px] text-[#697B82]">
+              {formatDate(bill.createdAt)}
+              {" • "}
               {bill.createdAt
                 ? new Date(
                     bill.createdAt
@@ -1456,8 +1501,7 @@ function ProfessionalBill({ bill }) {
                     "en-IN",
                     {
                       hour: "2-digit",
-                      minute:
-                        "2-digit",
+                      minute: "2-digit",
                     }
                   )
                 : "—"}
@@ -1467,10 +1511,10 @@ function ProfessionalBill({ bill }) {
       </div>
 
       {/* ===================================================
-          GST / LICENSE
+          BUSINESS DETAILS
       =================================================== */}
 
-      <div className="grid border-b border-[#D9C7CB] bg-[#9DB4C09F9] text-[9px] sm:grid-cols-3">
+      <div className="grid border-b border-[#D8E1E4] bg-[#F7F9FA] text-[9px] sm:grid-cols-3">
         <MiniInfo
           label="GSTIN"
           value={PHARMACY.gstin}
@@ -1478,9 +1522,7 @@ function ProfessionalBill({ bill }) {
 
         <MiniInfo
           label="Drug License"
-          value={
-            PHARMACY.drugLicense
-          }
+          value={PHARMACY.drugLicense}
           border
         />
 
@@ -1495,14 +1537,14 @@ function ProfessionalBill({ bill }) {
           CUSTOMER
       =================================================== */}
 
-      <div className="border-b border-[#D9C7CB]">
-        <div className="bg-[#3F2930] px-4 py-1.5">
+      <div className="border-b border-[#D8E1E4]">
+        <div className="bg-[#344850] px-5 py-2">
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white">
             Customer Details
           </p>
         </div>
 
-        <div className="grid text-[9px] sm:grid-cols-3">
+        <div className="grid sm:grid-cols-3">
           <CustomerMini
             label="Customer Name"
             value={
@@ -1514,8 +1556,7 @@ function ProfessionalBill({ bill }) {
           <CustomerMini
             label="Mobile Number"
             value={
-              bill.customerMobile ||
-              "—"
+              bill.customerMobile || "—"
             }
             border
           />
@@ -1523,8 +1564,7 @@ function ProfessionalBill({ bill }) {
           <CustomerMini
             label="Payment Mode"
             value={
-              bill.paymentMode ||
-              "Cash"
+              bill.paymentMode || "Cash"
             }
             border
           />
@@ -1532,22 +1572,22 @@ function ProfessionalBill({ bill }) {
       </div>
 
       {/* ===================================================
-          MEDICINES
+          MEDICINE HEADER
       =================================================== */}
 
-      <div className="border-b border-[#D9C7CB] px-4 py-2.5">
+      <div className="border-b border-[#D8E1E4] px-5 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-[#3F2930]">
+            <p className="text-xs font-black text-[#263238]">
               Medicine Details
             </p>
 
-            <p className="text-[8px] text-[#8F7A80]">
+            <p className="mt-0.5 text-[8px] text-[#83949A]">
               Itemized medicines, GST and pricing
             </p>
           </div>
 
-          <p className="text-[8px] font-bold text-[#6F5A60]">
+          <p className="rounded-full bg-[#EFF4F5] px-2.5 py-1 text-[8px] font-bold text-[#60747B]">
             Items:{" "}
             {items.reduce(
               (sum, item) =>
@@ -1562,13 +1602,13 @@ function ProfessionalBill({ bill }) {
       </div>
 
       {/* ===================================================
-          COMPACT TABLE
+          TABLE
       =================================================== */}
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] border-collapse text-[8px]">
           <thead>
-            <tr className="bg-[#5C6B73] text-[#4D333A]">
+            <tr className="bg-[#E8EFF1] text-[#43565D]">
               <BillHead align="center">
                 #
               </BillHead>
@@ -1624,149 +1664,136 @@ function ProfessionalBill({ bill }) {
           </thead>
 
           <tbody>
-            {items.map(
-              (item, index) => {
-                const tax =
-                  totals.details[
-                    index
-                  ];
+            {items.map((item, index) => {
+              const tax =
+                totals.details[index];
 
-                return (
-                  <tr
-                    key={
-                      item.medicineId ||
-                      `${item.name}-${index}`
-                    }
-                    className={
-                      index % 2 === 0
-                        ? "bg-white"
-                        : "bg-[#9DB4C0AFA]"
-                    }
+              return (
+                <tr
+                  key={
+                    item.medicineId ||
+                    `${item.name}-${index}`
+                  }
+                  className={
+                    index % 2 === 0
+                      ? "bg-white"
+                      : "bg-[#F8FAFA]"
+                  }
+                >
+                  <BillCell align="center">
+                    {index + 1}
+                  </BillCell>
+
+                  <BillCell>
+                    <p className="font-black text-[#263238]">
+                      {item.name ||
+                        "Medicine"}
+                    </p>
+
+                    <p className="text-[7px] text-[#87969B]">
+                      HSN:{" "}
+                      {item.hsn ||
+                        item.hsnCode ||
+                        "3004"}
+                    </p>
+                  </BillCell>
+
+                  <BillCell>
+                    {item.batch ||
+                      item.batchNo ||
+                      "—"}
+                  </BillCell>
+
+                  <BillCell align="center">
+                    {item.expiry ||
+                      item.expiryDate ||
+                      "—"}
+                  </BillCell>
+
+                  <BillCell align="right">
+                    {money(
+                      item.mrp ||
+                        item.maximumRetailPrice ||
+                        item.unitPrice
+                    )}
+                  </BillCell>
+
+                  <BillCell
+                    align="center"
+                    bold
                   >
-                    <BillCell align="center">
-                      {index + 1}
-                    </BillCell>
+                    {tax.quantity}
+                  </BillCell>
 
-                    <BillCell>
-                      <p className="font-black text-[#3F2930]">
-                        {item.name ||
-                          "Medicine"}
-                      </p>
+                  <BillCell align="right">
+                    {money(tax.unitPrice)}
+                  </BillCell>
 
-                      <p className="text-[7px] text-[#8F7A80]">
-                        HSN:{" "}
-                        {item.hsn ||
-                          item.hsnCode ||
-                          "3004"}
-                      </p>
-                    </BillCell>
+                  <BillCell align="right">
+                    {tax.discount > 0
+                      ? money(tax.discount)
+                      : "—"}
+                  </BillCell>
 
-                    <BillCell>
-                      {item.batch ||
-                        item.batchNo ||
-                        "—"}
-                    </BillCell>
+                  <BillCell
+                    align="right"
+                    bold
+                  >
+                    {money(
+                      tax.taxableValue
+                    )}
+                  </BillCell>
 
-                    <BillCell align="center">
-                      {item.expiry ||
-                        item.expiryDate ||
-                        "—"}
-                    </BillCell>
+                  <BillCell align="center">
+                    <span className="font-black text-[#405B64]">
+                      {tax.gstRate}%
+                    </span>
 
-                    <BillCell align="right">
-                      {money(
-                        item.mrp ||
-                          item.maximumRetailPrice ||
-                          item.unitPrice
-                      )}
-                    </BillCell>
+                    <span className="block text-[7px] text-[#8B9A9F]">
+                      {tax.cgstRate}+
+                      {tax.sgstRate}
+                    </span>
+                  </BillCell>
 
-                    <BillCell
-                      align="center"
-                      bold
-                    >
-                      {tax.quantity}
-                    </BillCell>
+                  <BillCell align="right">
+                    {money(tax.cgstAmount)}
+                  </BillCell>
 
-                    <BillCell align="right">
-                      {money(
-                        tax.unitPrice
-                      )}
-                    </BillCell>
+                  <BillCell align="right">
+                    {money(tax.sgstAmount)}
+                  </BillCell>
 
-                    <BillCell align="right">
-                      {tax.discount > 0
-                        ? money(
-                            tax.discount
-                          )
-                        : "—"}
-                    </BillCell>
-
-                    <BillCell
-                      align="right"
-                      bold
-                    >
-                      {money(
-                        tax.taxableValue
-                      )}
-                    </BillCell>
-
-                    <BillCell align="center">
-                      <span className="font-black text-[#6A414B]">
-                        {tax.gstRate}%
-                      </span>
-                      <span className="block text-[7px] text-[#8F7A80]">
-                        {tax.cgstRate}+
-                        {tax.sgstRate}
-                      </span>
-                    </BillCell>
-
-                    <BillCell align="right">
-                      {money(
-                        tax.cgstAmount
-                      )}
-                    </BillCell>
-
-                    <BillCell align="right">
-                      {money(
-                        tax.sgstAmount
-                      )}
-                    </BillCell>
-
-                    <BillCell
-                      align="right"
-                      bold
-                    >
-                      <span className="text-[#6A414B]">
-                        {money(
-                          tax.total
-                        )}
-                      </span>
-                    </BillCell>
-                  </tr>
-                );
-              }
-            )}
+                  <BillCell
+                    align="right"
+                    bold
+                  >
+                    <span className="text-[#344F58]">
+                      {money(tax.total)}
+                    </span>
+                  </BillCell>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* ===================================================
-          GST + TOTALS
+          TAX + TOTALS
       =================================================== */}
 
-      <div className="grid border-t border-[#D9C7CB] sm:grid-cols-2">
+      <div className="grid border-t border-[#D8E1E4] sm:grid-cols-2">
         {/* GST */}
 
-        <div className="border-b border-[#D9C7CB] p-3 sm:border-b-0 sm:border-r">
-          <p className="mb-2 text-[9px] font-black uppercase tracking-wider text-[#6A414B]">
+        <div className="border-b border-[#D8E1E4] p-4 sm:border-b-0 sm:border-r">
+          <p className="mb-2 text-[9px] font-black uppercase tracking-wider text-[#52666D]">
             GST Summary
           </p>
 
-          <div className="overflow-hidden rounded-lg border border-[#E7D9DC]">
+          <div className="overflow-hidden rounded-lg border border-[#DDE5E7]">
             <table className="w-full text-[8px]">
               <thead>
-                <tr className="bg-[#9DB4C0]">
+                <tr className="bg-[#F1F5F6]">
                   <th className="px-2 py-1.5 text-left">
                     Rate
                   </th>
@@ -1790,46 +1817,34 @@ function ProfessionalBill({ bill }) {
               </thead>
 
               <tbody>
-                {taxGroups.map(
-                  (group) => (
-                    <tr
-                      key={
-                        group.rate
-                      }
-                      className="border-t border-[#E7D9DC]"
-                    >
-                      <td className="px-2 py-1.5 font-bold">
-                        {group.rate}%
-                      </td>
+                {taxGroups.map((group) => (
+                  <tr
+                    key={group.rate}
+                    className="border-t border-[#E2E8EA]"
+                  >
+                    <td className="px-2 py-1.5 font-bold">
+                      {group.rate}%
+                    </td>
 
-                      <td className="px-2 py-1.5 text-right">
-                        {money(
-                          group.taxable
-                        )}
-                      </td>
+                    <td className="px-2 py-1.5 text-right">
+                      {money(group.taxable)}
+                    </td>
 
-                      <td className="px-2 py-1.5 text-right">
-                        {money(
-                          group.cgst
-                        )}
-                      </td>
+                    <td className="px-2 py-1.5 text-right">
+                      {money(group.cgst)}
+                    </td>
 
-                      <td className="px-2 py-1.5 text-right">
-                        {money(
-                          group.sgst
-                        )}
-                      </td>
+                    <td className="px-2 py-1.5 text-right">
+                      {money(group.sgst)}
+                    </td>
 
-                      <td className="px-2 py-1.5 text-right font-black">
-                        {money(
-                          group.gst
-                        )}
-                      </td>
-                    </tr>
-                  )
-                )}
+                    <td className="px-2 py-1.5 text-right font-black">
+                      {money(group.gst)}
+                    </td>
+                  </tr>
+                ))}
 
-                <tr className="border-t border-[#E7D9DC] bg-[#9DB4C0] font-black">
+                <tr className="border-t border-[#DDE5E7] bg-[#F1F5F6] font-black">
                   <td className="px-2 py-1.5">
                     Total
                   </td>
@@ -1841,21 +1856,15 @@ function ProfessionalBill({ bill }) {
                   </td>
 
                   <td className="px-2 py-1.5 text-right">
-                    {money(
-                      totals.cgst
-                    )}
+                    {money(totals.cgst)}
                   </td>
 
                   <td className="px-2 py-1.5 text-right">
-                    {money(
-                      totals.sgst
-                    )}
+                    {money(totals.sgst)}
                   </td>
 
-                  <td className="px-2 py-1.5 text-right text-[#A96F7D]">
-                    {money(
-                      totals.gst
-                    )}
+                  <td className="px-2 py-1.5 text-right text-[#344F58]">
+                    {money(totals.gst)}
                   </td>
                 </tr>
               </tbody>
@@ -1865,8 +1874,8 @@ function ProfessionalBill({ bill }) {
 
         {/* TOTAL */}
 
-        <div className="p-3">
-          <p className="mb-2 text-[9px] font-black uppercase tracking-wider text-[#6A414B]">
+        <div className="p-4">
+          <p className="mb-2 text-[9px] font-black uppercase tracking-wider text-[#52666D]">
             Invoice Summary
           </p>
 
@@ -1894,42 +1903,32 @@ function ProfessionalBill({ bill }) {
 
             <CompactSummary
               label="CGST"
-              value={money(
-                totals.cgst
-              )}
+              value={money(totals.cgst)}
             />
 
             <CompactSummary
               label="SGST"
-              value={money(
-                totals.sgst
-              )}
+              value={money(totals.sgst)}
             />
 
             <CompactSummary
               label="Total GST"
-              value={money(
-                totals.gst
-              )}
+              value={money(totals.gst)}
             />
 
             <CompactSummary
               label="Round Off"
-              value={money(
-                roundOff
-              )}
+              value={money(roundOff)}
             />
           </div>
 
-          <div className="mt-2 flex items-center justify-between rounded-lg bg-[#3F2930] px-3 py-2.5 text-white">
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-[#344850] px-3.5 py-3 text-white">
             <span className="text-[10px] font-black uppercase">
               Grand Total
             </span>
 
             <span className="text-base font-black">
-              {money(
-                roundedTotal
-              )}
+              {money(roundedTotal)}
             </span>
           </div>
         </div>
@@ -1939,29 +1938,27 @@ function ProfessionalBill({ bill }) {
           AMOUNT WORDS
       =================================================== */}
 
-      <div className="border-t border-[#D9C7CB] bg-[#9DB4C0] px-4 py-2.5">
-        <p className="text-[7px] font-black uppercase tracking-wider text-[#9B858B]">
+      <div className="border-t border-[#D8E1E4] bg-[#F5F8F9] px-5 py-3">
+        <p className="text-[7px] font-black uppercase tracking-wider text-[#84959A]">
           Amount in Words
         </p>
 
-        <p className="mt-0.5 text-[10px] font-black text-[#3F2930]">
-          {numberToWords(
-            roundedTotal
-          )}
+        <p className="mt-0.5 text-[10px] font-black text-[#263238]">
+          {numberToWords(roundedTotal)}
         </p>
       </div>
 
       {/* ===================================================
-          TERMS + SIGNATURE
+          TERMS
       =================================================== */}
 
-      <div className="grid border-t border-[#D9C7CB] sm:grid-cols-2">
-        <div className="border-b border-[#D9C7CB] p-3 sm:border-b-0 sm:border-r">
-          <p className="text-[8px] font-black uppercase tracking-wider text-[#6A414B]">
+      <div className="grid border-t border-[#D8E1E4] sm:grid-cols-2">
+        <div className="border-b border-[#D8E1E4] p-4 sm:border-b-0 sm:border-r">
+          <p className="text-[8px] font-black uppercase tracking-wider text-[#52666D]">
             Terms & Conditions
           </p>
 
-          <ul className="mt-1.5 space-y-0.5 text-[7px] leading-3.5 text-[#6F5A60]">
+          <ul className="mt-1.5 space-y-0.5 text-[7px] leading-3.5 text-[#6F7F84]">
             <li>
               • Goods once sold will not be returned except as per applicable policy.
             </li>
@@ -1980,14 +1977,14 @@ function ProfessionalBill({ bill }) {
           </ul>
         </div>
 
-        <div className="p-3 text-center">
-          <p className="text-[8px] font-black uppercase tracking-wider text-[#6A414B]">
+        <div className="p-4 text-center">
+          <p className="text-[8px] font-black uppercase tracking-wider text-[#52666D]">
             Authorized Signatory
           </p>
 
-          <div className="mx-auto mt-7 h-px w-36 bg-[#BDAEB2]" />
+          <div className="mx-auto mt-8 h-px w-36 bg-[#AEBCC0]" />
 
-          <p className="mt-1 text-[7px] text-[#8F7A80]">
+          <p className="mt-1 text-[7px] text-[#839297]">
             For {PHARMACY.name}
           </p>
         </div>
@@ -1997,13 +1994,13 @@ function ProfessionalBill({ bill }) {
           FOOTER
       =================================================== */}
 
-      <div className="border-t border-[#3F2930] bg-[#9DB4C0] px-4 py-2.5 text-center">
-        <p className="text-[9px] font-black text-[#3F2930]">
+      <div className="border-t-2 border-[#344850] bg-[#F1F5F6] px-5 py-3 text-center">
+        <p className="text-[9px] font-black text-[#344850]">
           Thank you for choosing{" "}
           {PHARMACY.name}
         </p>
 
-        <p className="mt-0.5 text-[7px] text-[#8F7A80]">
+        <p className="mt-0.5 text-[7px] text-[#87969B]">
           Computer Generated Tax Invoice • Please retain this invoice for your records.
         </p>
       </div>
@@ -2022,17 +2019,17 @@ function MiniInfo({
 }) {
   return (
     <div
-      className={`px-4 py-2 ${
+      className={`px-5 py-2.5 ${
         border
-          ? "border-t border-[#D9C7CB] sm:border-l sm:border-t-0"
+          ? "border-t border-[#D8E1E4] sm:border-l sm:border-t-0"
           : ""
       }`}
     >
-      <p className="text-[7px] font-bold uppercase tracking-wide text-[#9B858B]">
+      <p className="text-[7px] font-bold uppercase tracking-wide text-[#8B9BA0]">
         {label}
       </p>
 
-      <p className="mt-0.5 font-black text-[#3F2930]">
+      <p className="mt-0.5 font-black text-[#344850]">
         {value}
       </p>
     </div>
@@ -2046,17 +2043,17 @@ function CustomerMini({
 }) {
   return (
     <div
-      className={`px-4 py-2 ${
+      className={`px-5 py-2.5 ${
         border
-          ? "border-t border-[#E7D9DC] sm:border-l sm:border-t-0"
+          ? "border-t border-[#E0E7E9] sm:border-l sm:border-t-0"
           : ""
       }`}
     >
-      <p className="text-[7px] font-bold uppercase text-[#9B858B]">
+      <p className="text-[7px] font-bold uppercase text-[#8B9BA0]">
         {label}
       </p>
 
-      <p className="mt-0.5 font-black text-[#3F2930]">
+      <p className="mt-0.5 font-black text-[#344850]">
         {value}
       </p>
     </div>
@@ -2069,11 +2066,11 @@ function CompactSummary({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-[#6F5A60]">
+      <span className="text-[#718188]">
         {label}
       </span>
 
-      <span className="font-bold text-[#3F2930]">
+      <span className="font-bold text-[#344850]">
         {value}
       </span>
     </div>
@@ -2093,7 +2090,7 @@ function BillHead({
 
   return (
     <th
-      className={`border-r border-[#D9C7CB] px-2 py-2 font-black ${alignment}`}
+      className={`border-r border-[#D5E0E3] px-2 py-2.5 font-black ${alignment}`}
     >
       {children}
     </th>
@@ -2114,10 +2111,10 @@ function BillCell({
 
   return (
     <td
-      className={`border-r border-b border-[#E7D9DC] px-2 py-2 ${alignment} ${
+      className={`border-r border-b border-[#E3E9EB] px-2 py-2.5 ${alignment} ${
         bold
-          ? "font-black text-[#3F2930]"
-          : "text-[#4D3B40]"
+          ? "font-black text-[#263238]"
+          : "text-[#4D5D62]"
       }`}
     >
       {children}

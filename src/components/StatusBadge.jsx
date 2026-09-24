@@ -1,11 +1,10 @@
-
 export function StockBadge({ medicine }) {
   const quantity = Number(medicine.quantity);
   const reorder = Number(medicine.reorderLevel || 0);
 
   if (quantity === 0) {
     return (
-      <Badge className="border border-rose-200 bg-rose-50 text-rose-700">
+      <Badge className="border border-rose-200 bg-rose-50 text-rose-600">
         Out of stock
       </Badge>
     );
@@ -13,14 +12,14 @@ export function StockBadge({ medicine }) {
 
   if (quantity <= reorder) {
     return (
-      <Badge className="border border-[C2DFE3] bg-[#5C6B73] text-[#6A414B]">
+      <Badge className="border border-[#D8E7E9] bg-[#EDF5F6] text-[#61777D]">
         Low stock
       </Badge>
     );
   }
 
   return (
-    <Badge className="border border-[C2DFE3]/70 bg-[C2DFE3]/35 text-[#6A414B]">
+    <Badge className="border border-[#D5E5E7] bg-[#F1F7F8] text-[#60767C]">
       In stock
     </Badge>
   );
@@ -35,7 +34,7 @@ export function ExpiryBadge({ date }) {
 
   if (expiry < today) {
     return (
-      <Badge className="border border-rose-200 bg-rose-50 text-rose-700">
+      <Badge className="border border-rose-200 bg-rose-50 text-rose-600">
         Expired
       </Badge>
     );
@@ -43,14 +42,14 @@ export function ExpiryBadge({ date }) {
 
   if (expiry <= inThirty) {
     return (
-      <Badge className="border border-[C2DFE3] bg-[#5C6B73] text-[#6A414B]">
+      <Badge className="border border-[#D8E7E9] bg-[#EDF5F6] text-[#61777D]">
         Expiring soon
       </Badge>
     );
   }
 
   return (
-    <Badge className="border border-[C2DFE3]/70 bg-[C2DFE3]/35 text-[#6A414B]">
+    <Badge className="border border-[#D5E5E7] bg-[#F1F7F8] text-[#60767C]">
       Valid
     </Badge>
   );
@@ -59,10 +58,9 @@ export function ExpiryBadge({ date }) {
 function Badge({ children, className }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ${className}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black tracking-wide ${className}`}
     >
       {children}
     </span>
   );
 }
-

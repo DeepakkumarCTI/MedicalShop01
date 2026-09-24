@@ -1,709 +1,593 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-AlertTriangle,
-ArrowRight,
-Boxes,
-CalendarClock,
-IndianRupee,
-PackageCheck,
-Pill,
-Plus,
-Phone,
-Receipt,
-UserRound,
-Truck,
-XCircle,
+  AlertTriangle,
+  ArrowRight,
+  Boxes,
+  CalendarClock,
+  IndianRupee,
+  PackageCheck,
+  Pill,
+  Plus,
+  Phone,
+  Receipt,
+  UserRound,
+  Truck,
+  XCircle,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 import { ExpiryBadge, StockBadge } from "../components/StatusBadge";
 
+/* ============================================================
+   HELPERS
+============================================================ */
+
 const formatDate = (value) => {
-if (!value) return "-";
+  if (!value) return "-";
 
-const date = new Date(`${value}T00:00:00`);
+  const date = new Date(`${value}T00:00:00`);
 
-if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) return value;
 
-return date.toLocaleDateString("en-IN", {
-day: "2-digit",
-month: "short",
-year: "numeric",
-});
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const formatDateTime = (value) => {
-if (!value) return "-";
+  if (!value) return "-";
 
-const date = new Date(value);
+  const date = new Date(value);
 
-if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) return value;
 
-return date.toLocaleString("en-IN", {
-day: "2-digit",
-month: "short",
-year: "numeric",
-hour: "2-digit",
-minute: "2-digit",
-});
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatCurrency = (value) => {
-const amount = Number(value || 0);
+  const amount = Number(value || 0);
 
-return `₹${amount.toLocaleString("en-IN", {
+  return `₹${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
 export default function Dashboard() {
-const { data, stats, sales } = useApp();
+  const { data, stats, sales } = useApp();
 
-const [showAllSales, setShowAllSales] = useState(false);
+  const [showAllSales, setShowAllSales] = useState(false);
 
-const medicines = Array.isArray(data?.medicines)
-? data.medicines
-: [];
+  const medicines = Array.isArray(data?.medicines)
+    ? data.medicines
+    : [];
 
-const suppliers = Array.isArray(data?.suppliers)
-? data.suppliers
-: [];
+  const suppliers = Array.isArray(data?.suppliers)
+    ? data.suppliers
+    : [];
 
-const allSales = Array.isArray(sales) ? sales : [];
+  const allSales = Array.isArray(sales) ? sales : [];
 
-/* ============================================================
-MEDICINE ATTENTION
-============================================================ */
+  /* ============================================================
+     MEDICINE ATTENTION
+  ============================================================ */
 
-const attentionItems = useMemo(() => {
-const today = new Date();
+  const attentionItems = useMemo(() => {
+    const today = new Date();
 
+    const limit = new Date(today);
+    limit.setDate(today.getDate() + 30);
 
-const limit = new Date(today);
-limit.setDate(today.getDate() + 30);
+    return medicines
+      .filter((medicine) => {
+        if (!medicine) return false;
 
-return medicines
-  .filter((medicine) => {
-    if (!medicine) return false;
+        const quantity = Number(medicine.quantity || 0);
+        const reorderLevel = Number(medicine.reorderLevel || 0);
 
-    const quantity = Number(medicine.quantity || 0);
-    const reorderLevel = Number(medicine.reorderLevel || 0);
+        let expiry = null;
 
-    let expiry = null;
+        if (medicine.expiryDate) {
+          expiry = new Date(
+            `${medicine.expiryDate}T23:59:59`
+          );
+        }
 
-    if (medicine.expiryDate) {
-      expiry = new Date(`${medicine.expiryDate}T23:59:59`);
-    }
+        const lowStock = quantity <= reorderLevel;
 
-    const lowStock = quantity <= reorderLevel;
+        const expiringSoon =
+          expiry &&
+          !Number.isNaN(expiry.getTime()) &&
+          expiry <= limit;
 
-    const expiringSoon =
-      expiry &&
-      !Number.isNaN(expiry.getTime()) &&
-      expiry <= limit;
+        return lowStock || expiringSoon;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(
+          `${a.expiryDate || "9999-12-31"}T23:59:59`
+        );
 
-    return lowStock || expiringSoon;
-  })
-  .sort((a, b) => {
-    const dateA = new Date(
-      `${a.expiryDate || "9999-12-31"}T23:59:59`
-    );
+        const dateB = new Date(
+          `${b.expiryDate || "9999-12-31"}T23:59:59`
+        );
 
-    const dateB = new Date(
-      `${b.expiryDate || "9999-12-31"}T23:59:59`
-    );
+        return dateA - dateB;
+      })
+      .slice(0, 5);
+  }, [medicines]);
 
-    return dateA - dateB;
-  })
-  .slice(0, 5);
+  /* ============================================================
+     DASHBOARD COUNTS
+  ============================================================ */
 
+  const lowStockCount = useMemo(() => {
+    return medicines.filter(
+      (medicine) =>
+        Number(medicine.quantity || 0) <=
+        Number(medicine.reorderLevel || 0)
+    ).length;
+  }, [medicines]);
 
-}, [medicines]);
+  const outOfStockCount = useMemo(() => {
+    return medicines.filter(
+      (medicine) => Number(medicine.quantity || 0) <= 0
+    ).length;
+  }, [medicines]);
 
-/* ============================================================
-DASHBOARD COUNTS
-============================================================ */
+  const expiringSoonCount = useMemo(() => {
+    const today = new Date();
 
-const lowStockCount = useMemo(() => {
-return medicines.filter(
-(medicine) =>
-Number(medicine.quantity || 0) <=
-Number(medicine.reorderLevel || 0)
-).length;
-}, [medicines]);
+    const limit = new Date(today);
+    limit.setDate(today.getDate() + 30);
 
-const outOfStockCount = useMemo(() => {
-return medicines.filter(
-(medicine) => Number(medicine.quantity || 0) <= 0
-).length;
-}, [medicines]);
+    return medicines.filter((medicine) => {
+      if (!medicine.expiryDate) return false;
 
-const expiringSoonCount = useMemo(() => {
-const today = new Date();
+      const expiry = new Date(
+        `${medicine.expiryDate}T23:59:59`
+      );
 
+      return (
+        !Number.isNaN(expiry.getTime()) &&
+        expiry <= limit
+      );
+    }).length;
+  }, [medicines]);
 
-const limit = new Date(today);
-limit.setDate(today.getDate() + 30);
+  /* ============================================================
+     INVENTORY VALUE
+  ============================================================ */
 
-return medicines.filter((medicine) => {
-  if (!medicine.expiryDate) return false;
+  const inventoryValue = useMemo(() => {
+    return medicines.reduce((total, medicine) => {
+      const quantity = Number(medicine.quantity || 0);
+      const unitPrice = Number(medicine.unitPrice || 0);
 
-  const expiry = new Date(
-    `${medicine.expiryDate}T23:59:59`
-  );
+      return total + quantity * unitPrice;
+    }, 0);
+  }, [medicines]);
 
-  return (
-    !Number.isNaN(expiry.getTime()) &&
-    expiry <= limit
-  );
-}).length;
+  /* ============================================================
+     SALES DATA
+  ============================================================ */
 
-
-}, [medicines]);
-
-/* ============================================================
-INVENTORY VALUE
-============================================================ */
-
-const inventoryValue = useMemo(() => {
-return medicines.reduce((total, medicine) => {
-const quantity = Number(medicine.quantity || 0);
-const unitPrice = Number(medicine.unitPrice || 0);
-
-
-  return total + quantity * unitPrice;
-}, 0);
-
-
-}, [medicines]);
-
-/* ============================================================
-SALES DATA
-============================================================ */
-
-const sortedSales = useMemo(() => {
-return [...allSales].sort((a, b) => {
-const dateA = new Date(
-a?.createdAt ||
-a?.date ||
-a?.timestamp ||
-0
-).getTime();
-
-
-  const dateB = new Date(
-    b?.createdAt ||
-      b?.date ||
-      b?.timestamp ||
-      0
-  ).getTime();
-
-  return dateB - dateA;
-});
-
-
-}, [allSales]);
-
-const displayedSales = showAllSales
-? sortedSales
-: sortedSales.slice(0, 5);
-
-/* ============================================================
-SALES TOTALS
-============================================================ */
-
-const totalSalesAmount = useMemo(() => {
-return allSales.reduce((total, sale) => {
-return (
-total +
-Number(
-sale?.total ??
-sale?.grandTotal ??
-sale?.amount ??
-sale?.totalAmount ??
-0
-)
-);
-}, 0);
-}, [allSales]);
-
-const todaySalesAmount = useMemo(() => {
-const today = new Date();
-
-
-return allSales.reduce((total, sale) => {
-  const saleDate = new Date(
-    sale?.createdAt ||
-      sale?.date ||
-      sale?.timestamp ||
-      0
-  );
-
-  if (Number.isNaN(saleDate.getTime())) {
-    return total;
-  }
-
-  const isToday =
-    saleDate.getDate() === today.getDate() &&
-    saleDate.getMonth() === today.getMonth() &&
-    saleDate.getFullYear() === today.getFullYear();
-
-  if (!isToday) return total;
-
-  return (
-    total +
-    Number(
-      sale?.total ??
-        sale?.grandTotal ??
-        sale?.amount ??
-        sale?.totalAmount ??
-        0
-    )
-  );
-}, 0);
-
-
-}, [allSales]);
-
-/* ============================================================
-STAFF BILLING
-============================================================ */
-
-const staffBillingAmount = useMemo(() => {
-return allSales
-.filter((sale) => {
-const staff =
-sale?.staffName ||
-sale?.createdBy ||
-sale?.billedBy ||
-sale?.role;
-
-
-    return (
-      Boolean(staff) &&
-      String(sale?.role || "").toLowerCase() === "staff"
-    );
-  })
-  .reduce((total, sale) => {
-    return (
-      total +
-      Number(
-        sale?.total ??
-          sale?.grandTotal ??
-          sale?.amount ??
-          sale?.totalAmount ??
+  const sortedSales = useMemo(() => {
+    return [...allSales].sort((a, b) => {
+      const dateA = new Date(
+        a?.createdAt ||
+          a?.date ||
+          a?.timestamp ||
           0
-      )
-    );
-  }, 0);
+      ).getTime();
 
+      const dateB = new Date(
+        b?.createdAt ||
+          b?.date ||
+          b?.timestamp ||
+          0
+      ).getTime();
 
-}, [allSales]);
+      return dateB - dateA;
+    });
+  }, [allSales]);
 
-return ( <div className="space-y-6 pb-8">
+  const displayedSales = showAllSales
+    ? sortedSales
+    : sortedSales.slice(0, 5);
 
+  /* ============================================================
+     SALES TOTALS
+  ============================================================ */
 
-  {/* ======================================================
-      HERO
-  ====================================================== */}
+  const totalSalesAmount = useMemo(() => {
+    return allSales.reduce((total, sale) => {
+      return (
+        total +
+        Number(
+          sale?.total ??
+            sale?.grandTotal ??
+            sale?.amount ??
+            sale?.totalAmount ??
+            0
+        )
+      );
+    }, 0);
+  }, [allSales]);
 
-  <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[C2DFE3] via-[#E8C0C6] to-[#5C6B73] px-5 py-6 text-[#3F2930] shadow-lg shadow-[C2DFE3]/20 sm:px-7 sm:py-7">
-    <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/30 blur-3xl" />
+  const todaySalesAmount = useMemo(() => {
+    const today = new Date();
 
-    <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-white/20 blur-3xl" />
+    return allSales.reduce((total, sale) => {
+      const saleDate = new Date(
+        sale?.createdAt ||
+          sale?.date ||
+          sale?.timestamp ||
+          0
+      );
 
-    <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <p className="mb-1 text-sm font-medium text-[#6A414B]">
-          Pharmacy Management
-        </p>
+      if (Number.isNaN(saleDate.getTime())) {
+        return total;
+      }
 
-        <h1 className="text-2xl font-extrabold tracking-tight text-[#3F2930] sm:text-3xl">
-          Good morning, Admin 👋
-        </h1>
+      const isToday =
+        saleDate.getDate() === today.getDate() &&
+        saleDate.getMonth() === today.getMonth() &&
+        saleDate.getFullYear() === today.getFullYear();
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#65474E]">
-          Monitor your medicines, inventory, sales and customer
-          billing from one place.
-        </p>
-      </div>
+      if (!isToday) return total;
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          to="/medicines/new"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#6A414B] shadow-sm transition hover:bg-[#9DB4C0]"
+      return (
+        total +
+        Number(
+          sale?.total ??
+            sale?.grandTotal ??
+            sale?.amount ??
+            sale?.totalAmount ??
+            0
+        )
+      );
+    }, 0);
+  }, [allSales]);
+
+  /* ============================================================
+     STAFF BILLING
+  ============================================================ */
+
+  const staffBillingAmount = useMemo(() => {
+    return allSales
+      .filter((sale) => {
+        const staff =
+          sale?.staffName ||
+          sale?.createdBy ||
+          sale?.billedBy ||
+          sale?.role;
+
+        return (
+          Boolean(staff) &&
+          String(sale?.role || "").toLowerCase() === "staff"
+        );
+      })
+      .reduce((total, sale) => {
+        return (
+          total +
+          Number(
+            sale?.total ??
+              sale?.grandTotal ??
+              sale?.amount ??
+              sale?.totalAmount ??
+              0
+          )
+        );
+      }, 0);
+  }, [allSales]);
+
+  /* ============================================================
+     STAT CARD
+  ============================================================ */
+
+  const StatCard = ({
+    title,
+    value,
+    description,
+    icon: Icon,
+    iconClass,
+    valueClass = "text-slate-900",
+  }) => (
+    <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_30px_rgba(15,23,42,0.07)]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+            {title}
+          </p>
+
+          <p
+            className={`mt-2 text-3xl font-extrabold tracking-tight ${valueClass}`}
+          >
+            {value}
+          </p>
+        </div>
+
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
         >
-          <Plus size={17} />
-          Add Medicine
-        </Link>
-
-        <Link
-          to="/medicines"
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/25 px-4 py-2.5 text-sm font-bold text-[#4A3037] backdrop-blur transition hover:bg-white/40"
-        >
-          View Medicines
-          <ArrowRight size={17} />
-        </Link>
-      </div>
-    </div>
-  </section>
-
-  {/* ======================================================
-      STAT CARDS
-  ====================================================== */}
-
-  <section className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-
-    {/* Total Medicines */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-4 shadow-sm transition hover:border-[C2DFE3] hover:shadow-md sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Total Medicines
-          </p>
-
-          <p className="mt-2 text-2xl font-extrabold text-slate-900">
-            {stats?.totalMedicines ?? medicines.length}
-          </p>
-        </div>
-
-        <div className="rounded-xl bg-[#5C6B73] p-2.5 text-[#A96F7D]">
-          <Pill size={20} />
+          <Icon size={21} />
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-slate-500">
-        Medicines in inventory
-      </p>
-    </div>
+      <div className="mt-4 flex items-center gap-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
 
-    {/* Low Stock */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-4 shadow-sm transition hover:border-[C2DFE3] hover:shadow-md sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Low Stock
-          </p>
-
-          <p className="mt-2 text-2xl font-extrabold text-[#A96F7D]">
-            {stats?.lowStock ?? lowStockCount}
-          </p>
-        </div>
-
-        <div className="rounded-xl bg-[#5C6B73] p-2.5 text-[#A96F7D]">
-          <AlertTriangle size={20} />
-        </div>
-      </div>
-
-      <p className="mt-3 text-xs text-slate-500">
-        Need stock attention
-      </p>
-    </div>
-
-    {/* Out Of Stock */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-4 shadow-sm transition hover:border-[C2DFE3] hover:shadow-md sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Out of Stock
-          </p>
-
-          <p className="mt-2 text-2xl font-extrabold text-[#9A626E]">
-            {stats?.outOfStock ?? outOfStockCount}
-          </p>
-        </div>
-
-        <div className="rounded-xl bg-[#9DB4C0] p-2.5 text-[#9A626E]">
-          <XCircle size={20} />
-        </div>
-      </div>
-
-      <p className="mt-3 text-xs text-slate-500">
-        Currently unavailable
-      </p>
-    </div>
-
-    {/* Expiring Soon */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-4 shadow-sm transition hover:border-[C2DFE3] hover:shadow-md sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Expiring Soon
-          </p>
-
-          <p className="mt-2 text-2xl font-extrabold text-[#B87887]">
-            {stats?.expiringSoon ?? expiringSoonCount}
-          </p>
-        </div>
-
-        <div className="rounded-xl bg-[#5C6B73] p-2.5 text-[#B87887]">
-          <CalendarClock size={20} />
-        </div>
-      </div>
-
-      <p className="mt-3 text-xs text-slate-500">
-        Within the next 30 days
-      </p>
-    </div>
-  </section>
-
-  {/* ======================================================
-      SALES SUMMARY
-  ====================================================== */}
-
-  <section>
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <h2 className="text-lg font-extrabold text-slate-900">
-          Sales Summary
-        </h2>
-
-        <p className="text-xs text-slate-500">
-          Overview of your pharmacy sales
+        <p className="text-xs font-medium text-slate-500">
+          {description}
         </p>
       </div>
-
-      <Receipt size={20} className="text-[#B87887]" />
     </div>
+  );
 
-    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+  /* ============================================================
+     RETURN
+  ============================================================ */
 
-      {/* Today's Sales */}
-      <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-        <div className="flex items-center justify-between gap-1">
-          <div className="rounded-lg bg-[#5C6B73] p-2 text-[#A96F7D] sm:rounded-xl sm:p-3">
-            <IndianRupee size={17} className="sm:h-[21px] sm:w-[21px]" />
+  return (
+    <div className="min-h-full space-y-7 bg-[#f8fafc] pb-10">
+
+      {/* ======================================================
+          HERO
+      ====================================================== */}
+
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_6px_30px_rgba(15,23,42,0.05)]">
+        {/* Background decoration */}
+        <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-teal-100/70 blur-3xl" />
+        <div className="absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-rose-100/50 blur-3xl" />
+
+        <div className="relative z-10 flex flex-col gap-7 px-6 py-7 sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-teal-700">
+              <Activity size={13} />
+              Pharmacy Management
+            </div>
+
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+              Good morning, Admin{" "}
+              <span className="inline-block">👋</span>
+            </h1>
+
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:text-[15px]">
+              Manage your medicines, monitor inventory, track
+              sales and keep your pharmacy operations organized
+              from one place.
+            </p>
           </div>
 
-          <span className="rounded-full bg-[#5C6B73] px-1.5 py-0.5 text-[8px] font-bold text-[#7A4D58] sm:px-2.5 sm:py-1 sm:text-[11px]">
-            Today
-          </span>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/medicines/new"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0f766e] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#115e59] hover:shadow-md"
+            >
+              <Plus size={17} />
+              Add Medicine
+            </Link>
+
+            <Link
+              to="/medicines"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
+            >
+              View Medicines
+              <ArrowRight size={17} />
+            </Link>
+          </div>
         </div>
+      </section>
 
-        <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-          Today's Sales
-        </p>
+      {/* ======================================================
+          STAT CARDS
+      ====================================================== */}
 
-        <p className="mt-1 truncate text-base font-extrabold text-slate-900 sm:text-2xl">
-          {formatCurrency(todaySalesAmount)}
-        </p>
-      </div>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-      {/* Total Sales */}
-      <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-        <div className="flex items-center justify-between gap-1">
-          <div className="rounded-lg bg-[C2DFE3] p-2 text-[#5E3C45] sm:rounded-xl sm:p-3">
-            <Receipt size={17} className="sm:h-[21px] sm:w-[21px]" />
+        <StatCard
+          title="Total Medicines"
+          value={stats?.totalMedicines ?? medicines.length}
+          description="Medicines currently in inventory"
+          icon={Pill}
+          iconClass="bg-teal-50 text-teal-700"
+        />
+
+        <StatCard
+          title="Low Stock"
+          value={stats?.lowStock ?? lowStockCount}
+          description="Medicines need stock attention"
+          icon={AlertTriangle}
+          iconClass="bg-amber-50 text-amber-600"
+          valueClass="text-amber-600"
+        />
+
+        <StatCard
+          title="Out of Stock"
+          value={stats?.outOfStock ?? outOfStockCount}
+          description="Medicines currently unavailable"
+          icon={XCircle}
+          iconClass="bg-red-50 text-red-600"
+          valueClass="text-red-600"
+        />
+
+        <StatCard
+          title="Expiring Soon"
+          value={stats?.expiringSoon ?? expiringSoonCount}
+          description="Expiring within next 30 days"
+          icon={CalendarClock}
+          iconClass="bg-rose-50 text-rose-600"
+          valueClass="text-rose-600"
+        />
+      </section>
+
+      {/* ======================================================
+          SALES SUMMARY
+      ====================================================== */}
+
+      <section>
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+              Sales Overview
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Track pharmacy revenue and billing activity
+            </p>
           </div>
 
-          <span className="rounded-full bg-[C2DFE3]/50 px-1.5 py-0.5 text-[8px] font-bold text-[#6A414B] sm:px-2.5 sm:py-1 sm:text-[11px]">
-            All Time
-          </span>
-        </div>
-
-        <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-          Total Sales
-        </p>
-
-        <p className="mt-1 truncate text-base font-extrabold text-slate-900 sm:text-2xl">
-          {formatCurrency(totalSalesAmount)}
-        </p>
-      </div>
-
-      {/* Staff Billing */}
-      <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-        <div className="flex items-center justify-between gap-1">
-          <div className="rounded-lg bg-[#9DB4C0] p-2 text-[#A96F7D] sm:rounded-xl sm:p-3">
-            <UserRound size={17} className="sm:h-[21px] sm:w-[21px]" />
+          <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 sm:flex">
+            <TrendingUp size={19} />
           </div>
-
-          <span className="rounded-full bg-[#9DB4C0] px-1.5 py-0.5 text-[8px] font-bold text-[#7A4D58] sm:px-2.5 sm:py-1 sm:text-[11px]">
-            Staff
-          </span>
         </div>
 
-        <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-          Staff Billing
-        </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
-        <p className="mt-1 truncate text-base font-extrabold text-slate-900 sm:text-2xl">
-          {formatCurrency(staffBillingAmount)}
-        </p>
-      </div>
-    </div>
-  </section>
+          {/* Today */}
 
-  {/* ======================================================
-      CUSTOMER BILLING HISTORY
-  ====================================================== */}
-
-  <section className="rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
-
-    <div className="flex flex-col gap-3 border-b border-[#F0E2E4] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div>
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-[#5C6B73] p-2 text-[#A96F7D]">
-            <Receipt size={18} />
-          </div>
-
-          <h2 className="text-base font-extrabold text-slate-900">
-            Customer Billing History
-          </h2>
-        </div>
-
-        <p className="mt-1 pl-10 text-xs text-slate-500">
-          Showing the latest customer transactions
-        </p>
-      </div>
-
-      <span className="w-fit rounded-full bg-[#9DB4C0] px-3 py-1 text-xs font-bold text-[#7A4D58]">
-        {allSales.length}{" "}
-        {allSales.length === 1 ? "Bill" : "Bills"}
-      </span>
-    </div>
-
-    {allSales.length === 0 ? (
-      <div className="px-5 py-12 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#9DB4C0] text-[#B87887]">
-          <Receipt size={22} />
-        </div>
-
-        <h3 className="mt-3 text-sm font-bold text-slate-800">
-          No billing history
-        </h3>
-
-        <p className="mt-1 text-xs text-slate-500">
-          Customer bills will appear here after a sale is created.
-        </p>
-      </div>
-    ) : (
-      <>
-        {/* MOBILE BILLING CARDS */}
-
-        <div className="space-y-3 p-4 md:hidden">
-          {displayedSales.map((sale, index) => {
-            const customerName =
-              sale?.customerName ||
-              sale?.customer ||
-              sale?.name ||
-              "Walk-in Customer";
-
-            const customerPhone =
-              sale?.customerPhone ||
-              sale?.phone ||
-              sale?.mobile ||
-              sale?.customerMobile ||
-              "";
-
-            const amount = Number(
-              sale?.total ??
-                sale?.grandTotal ??
-                sale?.amount ??
-                sale?.totalAmount ??
-                0
-            );
-
-            const items = Array.isArray(sale?.items)
-              ? sale.items
-              : [];
-
-            const saleDate =
-              sale?.createdAt ||
-              sale?.date ||
-              sale?.timestamp;
-
-            return (
-              <div
-                key={sale?.id || `${saleDate}-${index}`}
-                className="rounded-xl border border-[#EAD5D8] bg-[#9DB4C0]/70 p-4 transition hover:border-[C2DFE3]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5C6B73] text-[#A96F7D]">
-                        <UserRound size={17} />
-                      </div>
-
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-900">
-                          {customerName}
-                        </p>
-
-                        {customerPhone && (
-                          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
-                            <Phone size={12} />
-                            {customerPhone}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="shrink-0 text-sm font-extrabold text-[#A96F7D]">
-                    {formatCurrency(amount)}
-                  </p>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#EAD5D8] pt-3">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                      Bill Date
-                    </p>
-
-                    <p className="mt-1 text-xs font-semibold text-slate-700">
-                      {formatDateTime(saleDate)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                      Items
-                    </p>
-
-                    <p className="mt-1 text-xs font-semibold text-slate-700">
-                      {items.length ||
-                        sale?.itemCount ||
-                        sale?.quantity ||
-                        0}
-                    </p>
-                  </div>
-                </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center justify-between">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                <IndianRupee size={21} />
               </div>
-            );
-          })}
+
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-teal-700">
+                Today
+              </span>
+            </div>
+
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+              Today's Sales
+            </p>
+
+            <p className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">
+              {formatCurrency(todaySalesAmount)}
+            </p>
+
+            <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-2/3 rounded-full bg-teal-500" />
+            </div>
+          </div>
+
+          {/* Total */}
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center justify-between">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <Receipt size={21} />
+              </div>
+
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-600">
+                All Time
+              </span>
+            </div>
+
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+              Total Sales
+            </p>
+
+            <p className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">
+              {formatCurrency(totalSalesAmount)}
+            </p>
+
+            <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-full rounded-full bg-violet-500" />
+            </div>
+          </div>
+
+          {/* Staff */}
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center justify-between">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                <UserRound size={21} />
+              </div>
+
+              <span className="rounded-full bg-sky-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-sky-600">
+                Staff
+              </span>
+            </div>
+
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+              Staff Billing
+            </p>
+
+            <p className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">
+              {formatCurrency(staffBillingAmount)}
+            </p>
+
+            <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-1/3 rounded-full bg-sky-500" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================
+          BILLING HISTORY
+      ====================================================== */}
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+              <Receipt size={19} />
+            </div>
+
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">
+                Customer Billing History
+              </h2>
+
+              <p className="mt-0.5 text-xs text-slate-500">
+                Latest customer transactions
+              </p>
+            </div>
+          </div>
+
+          <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
+            {allSales.length}{" "}
+            {allSales.length === 1 ? "Bill" : "Bills"}
+          </span>
         </div>
 
-        {/* DESKTOP BILLING TABLE */}
+        {allSales.length === 0 ? (
+          <div className="px-5 py-14 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <Receipt size={24} />
+            </div>
 
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[720px]">
-            <thead>
-              <tr className="border-b border-[#EAD5D8] bg-[#9DB4C0] text-left">
-                <th className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
-                  Customer
-                </th>
+            <h3 className="mt-4 text-sm font-bold text-slate-800">
+              No billing history
+            </h3>
 
-                <th className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
-                  Phone
-                </th>
+            <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
+              Customer bills will appear here after a sale is
+              created.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* MOBILE */}
 
-                <th className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
-                  Date
-                </th>
-
-                <th className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
-                  Items
-                </th>
-
-                <th className="px-5 py-3 text-right text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
-                  Amount
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
+            <div className="space-y-3 p-4 md:hidden">
               {displayedSales.map((sale, index) => {
                 const customerName =
                   sale?.customerName ||
@@ -716,7 +600,7 @@ return ( <div className="space-y-6 pb-8">
                   sale?.phone ||
                   sale?.mobile ||
                   sale?.customerMobile ||
-                  "-";
+                  "";
 
                 const amount = Number(
                   sale?.total ??
@@ -736,341 +620,474 @@ return ( <div className="space-y-6 pb-8">
                   sale?.timestamp;
 
                 return (
-                  <tr
-                    key={sale?.id || `${saleDate}-${index}`}
-                    className="border-b border-[#F0E2E4] last:border-0 hover:bg-[#9DB4C0]"
+                  <div
+                    key={
+                      sale?.id ||
+                      `${saleDate}-${index}`
+                    }
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-200 hover:bg-teal-50/30"
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#5C6B73] text-[#A96F7D]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
                           <UserRound size={16} />
                         </div>
 
-                        <div>
-                          <p className="text-sm font-bold text-slate-800">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-900">
                             {customerName}
                           </p>
+
+                          {customerPhone && (
+                            <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                              <Phone size={11} />
+                              {customerPhone}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </td>
 
-                    <td className="px-5 py-4">
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                        <Phone size={13} />
-                        {customerPhone}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-4 text-xs font-medium text-slate-600">
-                      {formatDateTime(saleDate)}
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <span className="rounded-full bg-[#9DB4C0] px-2.5 py-1 text-xs font-bold text-[#7A4D58]">
-                        {items.length ||
-                          sale?.itemCount ||
-                          sale?.quantity ||
-                          0}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-4 text-right">
-                      <span className="text-sm font-extrabold text-[#A96F7D]">
+                      <p className="shrink-0 text-sm font-extrabold text-teal-700">
                         {formatCurrency(amount)}
-                      </span>
-                    </td>
-                  </tr>
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200 pt-3">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                          Bill Date
+                        </p>
+
+                        <p className="mt-1 text-xs font-semibold text-slate-700">
+                          {formatDateTime(saleDate)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                          Items
+                        </p>
+
+                        <p className="mt-1 text-xs font-semibold text-slate-700">
+                          {items.length ||
+                            sale?.itemCount ||
+                            sale?.quantity ||
+                            0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+
+            {/* DESKTOP */}
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[720px]">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50 text-left">
+                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                      Customer
+                    </th>
+
+                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                      Phone
+                    </th>
+
+                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                      Date
+                    </th>
+
+                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                      Items
+                    </th>
+
+                    <th className="px-6 py-3.5 text-right text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {displayedSales.map((sale, index) => {
+                    const customerName =
+                      sale?.customerName ||
+                      sale?.customer ||
+                      sale?.name ||
+                      "Walk-in Customer";
+
+                    const customerPhone =
+                      sale?.customerPhone ||
+                      sale?.phone ||
+                      sale?.mobile ||
+                      sale?.customerMobile ||
+                      "-";
+
+                    const amount = Number(
+                      sale?.total ??
+                        sale?.grandTotal ??
+                        sale?.amount ??
+                        sale?.totalAmount ??
+                        0
+                    );
+
+                    const items = Array.isArray(
+                      sale?.items
+                    )
+                      ? sale.items
+                      : [];
+
+                    const saleDate =
+                      sale?.createdAt ||
+                      sale?.date ||
+                      sale?.timestamp;
+
+                    return (
+                      <tr
+                        key={
+                          sale?.id ||
+                          `${saleDate}-${index}`
+                        }
+                        className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+                              <UserRound size={16} />
+                            </div>
+
+                            <p className="text-sm font-bold text-slate-800">
+                              {customerName}
+                            </p>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                            <Phone size={13} />
+                            {customerPhone}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                          {formatDateTime(saleDate)}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                            {items.length ||
+                              sale?.itemCount ||
+                              sale?.quantity ||
+                              0}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-extrabold text-teal-700">
+                            {formatCurrency(amount)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* VIEW MORE */}
+
+            {allSales.length > 5 && (
+              <div className="flex justify-center border-t border-slate-100 px-4 py-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAllSales(
+                      (previous) => !previous
+                    )
+                  }
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
+                >
+                  {showAllSales
+                    ? "Show Less"
+                    : `View More (${allSales.length - 5} more)`}
+
+                  <ArrowRight
+                    size={14}
+                    className={
+                      showAllSales
+                        ? "-rotate-90"
+                        : "rotate-90"
+                    }
+                  />
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* ======================================================
+          MEDICINE ATTENTION + QUICK ACTIONS
+      ====================================================== */}
+
+      <section className="grid gap-5 lg:grid-cols-3">
+
+        {/* MEDICINE ATTENTION */}
+
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)] lg:col-span-2">
+
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">
+                Medicine Attention
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Medicines that need your attention
+              </p>
+            </div>
+
+            <Link
+              to="/medicines"
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-teal-700 transition hover:bg-teal-50"
+            >
+              View All
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {attentionItems.length === 0 ? (
+            <div className="px-5 py-14 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <PackageCheck size={24} />
+              </div>
+
+              <h3 className="mt-4 text-sm font-bold text-slate-800">
+                Everything looks good
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-500">
+                No medicines currently require attention.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {attentionItems.map((medicine) => (
+                <div
+                  key={medicine.id}
+                  className="flex flex-col gap-4 px-5 py-4 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                      <Pill size={18} />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-800">
+                        {medicine.name ||
+                          "Unnamed Medicine"}
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-500">
+                        Quantity:{" "}
+                        <span className="font-bold text-slate-700">
+                          {medicine.quantity ?? 0}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StockBadge medicine={medicine} />
+                    <ExpiryBadge medicine={medicine} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* VIEW MORE / SHOW LESS */}
+        {/* QUICK ACTIONS */}
 
-        {allSales.length > 5 && (
-          <div className="flex justify-center border-t border-[#EAD5D8] px-4 py-4">
-            <button
-              type="button"
-              onClick={() =>
-                setShowAllSales((previous) => !previous)
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[C2DFE3] bg-[#5C6B73] px-5 py-2.5 text-xs font-bold text-[#6A414B] transition hover:bg-[C2DFE3] hover:shadow-sm"
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+
+          <div className="border-b border-slate-100 px-5 py-5">
+            <h2 className="text-base font-extrabold text-slate-900">
+              Quick Actions
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Frequently used pharmacy actions
+            </p>
+          </div>
+
+          <div className="space-y-2.5 p-4">
+
+            {/* Add Medicine */}
+
+            <Link
+              to="/medicines/new"
+              className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-teal-200 hover:bg-teal-50/50"
             >
-              {showAllSales
-                ? "Show Less"
-                : `View More (${allSales.length - 5} more)`}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 transition group-hover:bg-teal-100">
+                <Plus size={18} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-800">
+                  Add Medicine
+                </p>
+
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Add a new medicine
+                </p>
+              </div>
 
               <ArrowRight
                 size={15}
-                className={
-                  showAllSales
-                    ? "rotate-[-90deg]"
-                    : "rotate-90"
-                }
+                className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-teal-700"
               />
-            </button>
-          </div>
-        )}
-      </>
-    )}
-  </section>
+            </Link>
 
-  {/* ======================================================
-      MAIN CONTENT
-  ====================================================== */}
+            {/* Manage Medicines */}
 
-  <section className="grid gap-6 lg:grid-cols-3">
-
-    {/* MEDICINE ATTENTION */}
-
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white shadow-sm lg:col-span-2">
-      <div className="flex items-center justify-between border-b border-[#EAD5D8] px-5 py-4">
-        <div>
-          <h2 className="text-base font-extrabold text-slate-900">
-            Medicine Attention
-          </h2>
-
-          <p className="mt-1 text-xs text-slate-500">
-            Medicines that require your attention
-          </p>
-        </div>
-
-        <Link
-          to="/medicines"
-          className="inline-flex items-center gap-1 text-xs font-bold text-[#A96F7D] hover:underline"
-        >
-          View All
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-
-      {attentionItems.length === 0 ? (
-        <div className="px-5 py-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#5C6B73] text-[#A96F7D]">
-            <PackageCheck size={22} />
-          </div>
-
-          <h3 className="mt-3 text-sm font-bold text-slate-800">
-            Everything looks good
-          </h3>
-
-          <p className="mt-1 text-xs text-slate-500">
-            No medicines currently require attention.
-          </p>
-        </div>
-      ) : (
-        <div className="divide-y divide-[#F0E2E4]">
-          {attentionItems.map((medicine) => (
-            <div
-              key={medicine.id}
-              className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            <Link
+              to="/medicines"
+              className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-violet-200 hover:bg-violet-50/50"
             >
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#5C6B73] text-[#A96F7D]">
-                  <Pill size={18} />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-slate-800">
-                    {medicine.name || "Unnamed Medicine"}
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-500">
-                    Qty:{" "}
-                    <span className="font-semibold text-slate-700">
-                      {medicine.quantity ?? 0}
-                    </span>
-                  </p>
-                </div>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <Pill size={18} />
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <StockBadge medicine={medicine} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-800">
+                  Manage Medicines
+                </p>
 
-                <ExpiryBadge medicine={medicine} />
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Update stock and medicine details
+                </p>
               </div>
+
+              <ArrowRight
+                size={15}
+                className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-violet-600"
+              />
+            </Link>
+
+            {/* Suppliers */}
+
+            <Link
+              to="/suppliers"
+              className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-sky-200 hover:bg-sky-50/50"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                <Truck size={18} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-800">
+                  Manage Suppliers
+                </p>
+
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  View and manage suppliers
+                </p>
+              </div>
+
+              <ArrowRight
+                size={15}
+                className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-sky-600"
+              />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================
+          BOTTOM INFORMATION
+      ====================================================== */}
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+        {/* Suppliers */}
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+              <Truck size={20} />
             </div>
-          ))}
-        </div>
-      )}
-    </div>
 
-    {/* QUICK ACTIONS */}
-
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
-      <div className="border-b border-[#EAD5D8] px-4 py-3 sm:px-5 sm:py-4">
-        <h2 className="text-base font-extrabold text-slate-900">
-          Quick Actions
-        </h2>
-
-        <p className="mt-1 text-xs text-slate-500">
-          Frequently used pharmacy actions
-        </p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 p-3 sm:block sm:space-y-3 sm:p-5">
-
-        {/* Add Medicine */}
-        <Link
-          to="/medicines/new"
-          className="flex flex-col items-center justify-center rounded-xl border border-[#EAD5D8] p-2.5 text-center transition hover:border-[C2DFE3] hover:bg-[#9DB4C0] sm:flex-row sm:justify-start sm:gap-3 sm:p-3 sm:text-left"
-        >
-          <div className="rounded-lg bg-[#5C6B73] p-2 text-[#A96F7D]">
-            <Plus size={17} />
+            <Link
+              to="/suppliers"
+              className="text-xs font-bold text-teal-700 hover:underline"
+            >
+              View
+            </Link>
           </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="mt-1 text-[10px] font-bold text-slate-800 sm:mt-0 sm:text-sm">
-              Add Medicine
-            </p>
+          <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+            Suppliers
+          </p>
 
-            <p className="hidden text-[11px] text-slate-500 sm:block">
-              Add a new medicine
-            </p>
-          </div>
+          <p className="mt-1 text-2xl font-extrabold text-slate-900">
+            {suppliers.length}
+          </p>
 
-          <ArrowRight
-            size={15}
-            className="mt-1 text-slate-400 sm:mt-0"
-          />
-        </Link>
-
-        {/* Manage Medicines */}
-        <Link
-          to="/medicines"
-          className="flex flex-col items-center justify-center rounded-xl border border-[#EAD5D8] p-2.5 text-center transition hover:border-[C2DFE3] hover:bg-[#9DB4C0] sm:flex-row sm:justify-start sm:gap-3 sm:p-3 sm:text-left"
-        >
-          <div className="rounded-lg bg-[C2DFE3]/60 p-2 text-[#6A414B]">
-            <Pill size={17} />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="mt-1 text-[10px] font-bold text-slate-800 sm:mt-0 sm:text-sm">
-              Manage Medicines
-            </p>
-
-            <p className="hidden text-[11px] text-slate-500 sm:block">
-              Update stock and medicine details
-            </p>
-          </div>
-
-          <ArrowRight
-            size={15}
-            className="mt-1 text-slate-400 sm:mt-0"
-          />
-        </Link>
-
-        {/* Manage Suppliers */}
-        <Link
-          to="/suppliers"
-          className="flex flex-col items-center justify-center rounded-xl border border-[#EAD5D8] p-2.5 text-center transition hover:border-[C2DFE3] hover:bg-[#9DB4C0] sm:flex-row sm:justify-start sm:gap-3 sm:p-3 sm:text-left"
-        >
-          <div className="rounded-lg bg-[#5C6B73] p-2 text-[#A96F7D]">
-            <Truck size={17} />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="mt-1 text-[10px] font-bold text-slate-800 sm:mt-0 sm:text-sm">
-              Manage Suppliers
-            </p>
-
-            <p className="hidden text-[11px] text-slate-500 sm:block">
-              View and manage suppliers
-            </p>
-          </div>
-
-          <ArrowRight
-            size={15}
-            className="mt-1 text-slate-400 sm:mt-0"
-          />
-        </Link>
-      </div>
-    </div>
-  </section>
-
-  {/* ======================================================
-      BOTTOM INFORMATION CARDS
-  ====================================================== */}
-
-  <section className="grid grid-cols-3 gap-2 sm:gap-4">
-
-    {/* Suppliers */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-      <div className="flex items-center justify-between">
-        <div className="rounded-xl bg-[#5C6B73] p-2 text-[#A96F7D] sm:p-3">
-          <Truck size={18} className="sm:h-5 sm:w-5" />
+          <p className="mt-1 text-xs text-slate-500">
+            Suppliers available in the system
+          </p>
         </div>
 
-        <Link
-          to="/suppliers"
-          className="text-[10px] font-bold text-[#A96F7D] hover:underline sm:text-xs"
-        >
-          View
-        </Link>
-      </div>
+        {/* Inventory */}
 
-      <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-        Suppliers
-      </p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+              <Boxes size={20} />
+            </div>
+          </div>
 
-      <p className="mt-1 text-lg font-extrabold text-slate-900 sm:text-2xl">
-        {suppliers.length}
-      </p>
+          <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+            Inventory Value
+          </p>
 
-      <p className="mt-1 hidden text-xs text-slate-500 sm:block">
-        Suppliers available in the system
-      </p>
-    </div>
+          <p className="mt-1 text-2xl font-extrabold text-slate-900">
+            {formatCurrency(inventoryValue)}
+          </p>
 
-    {/* Inventory Value */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-      <div className="flex items-center justify-between">
-        <div className="rounded-xl bg-[C2DFE3]/60 p-2 text-[#6A414B] sm:p-3">
-          <Boxes size={18} className="sm:h-5 sm:w-5" />
-        </div>
-      </div>
-
-      <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-        Inventory Value
-      </p>
-
-      <p className="mt-1 text-lg font-extrabold text-slate-900 sm:text-2xl">
-        {formatCurrency(inventoryValue)}
-      </p>
-
-      <p className="mt-1 hidden text-xs text-slate-500 sm:block">
-        Current value of available medicine stock
-      </p>
-    </div>
-
-    {/* Expiry Monitoring */}
-    <div className="rounded-2xl border border-[#EAD5D8] bg-white p-3 shadow-sm sm:p-5">
-      <div className="flex items-center justify-between">
-        <div className="rounded-xl bg-[#5C6B73] p-2 text-[#A96F7D] sm:p-3">
-          <CalendarClock size={18} className="sm:h-5 sm:w-5" />
+          <p className="mt-1 text-xs text-slate-500">
+            Current value of medicine stock
+          </p>
         </div>
 
-        <span className="rounded-full bg-[#9DB4C0] px-2 py-1 text-[9px] font-bold text-[#7A4D58] sm:px-2.5 sm:py-1 sm:text-[11px]">
-          30 Days
-        </span>
-      </div>
+        {/* Expiry */}
 
-      <p className="mt-3 text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:mt-4 sm:text-xs">
-        Expiry Monitoring
-      </p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+              <CalendarClock size={20} />
+            </div>
 
-      <p className="mt-1 text-lg font-extrabold text-slate-900 sm:text-2xl">
-        {expiringSoonCount}
-      </p>
+            <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-600">
+              30 Days
+            </span>
+          </div>
 
-      <p className="mt-1 hidden text-xs text-slate-500 sm:block">
-        Medicines expiring within 30 days
-      </p>
+          <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+            Expiry Monitoring
+          </p>
+
+          <p className="mt-1 text-2xl font-extrabold text-slate-900">
+            {expiringSoonCount}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Medicines expiring within 30 days
+          </p>
+        </div>
+      </section>
     </div>
-  </section>
-</div>
-
-
-);
+  );
 }

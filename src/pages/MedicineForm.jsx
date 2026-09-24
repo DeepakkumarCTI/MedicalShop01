@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
-  FileText,
   Package,
   Pill,
   Save,
@@ -87,9 +86,9 @@ export default function MedicineForm() {
 
   if (isEdit && !existing) {
     return (
-      <div className="min-h-[70vh] bg-[#9DB4C0] px-4 py-12">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[#EAD5D8] bg-[#5C6B73] text-[#8E5A68] shadow-sm">
+      <div className="min-h-[70vh] bg-[#F5F7F8] px-4 py-12">
+        <div className="mx-auto max-w-lg rounded-2xl border border-[#E4EAED] bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F7E9EC] text-[#8E5A68]">
             <span className="text-2xl font-black">!</span>
           </div>
 
@@ -104,7 +103,7 @@ export default function MedicineForm() {
 
           <Link
             to="/medicines"
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[C2DFE3] px-4 py-2.5 text-sm font-bold text-[#3F2930] shadow-sm transition hover:bg-[#D7A5B0]"
+            className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl bg-[#C2DFE3] px-4 text-sm font-bold text-[#3F2930] transition hover:bg-[#AFCFD4]"
           >
             <ArrowLeft size={16} />
             Back to medicines
@@ -115,7 +114,7 @@ export default function MedicineForm() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl pb-8">
+    <div className="mx-auto max-w-6xl pb-10">
       <PageHeader
         title={isEdit ? "Edit medicine" : "Add medicine"}
         description={
@@ -124,40 +123,35 @@ export default function MedicineForm() {
             : "Add a new medicine to your shop inventory."
         }
         action={
-          <Link
-            to="/medicines"
-            className="btn-secondary"
-          >
+          <Link to="/medicines" className="btn-secondary">
             <ArrowLeft size={17} />
             Back
           </Link>
         }
       />
 
-      <form onSubmit={submit} className="mt-5 space-y-4">
+      <form onSubmit={submit} className="mt-6 space-y-5">
+        {/* Error */}
         {error && (
-          <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 shadow-sm">
-            <div className="mt-0.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-xs font-black">
-                !
-              </span>
-            </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-sm font-semibold text-rose-700 shadow-sm">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-black">
+              !
+            </span>
+
             <p>{error}</p>
           </div>
         )}
 
-        {/* ================================
-            Medicine Information
-        ================================= */}
-        <section className="overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
+        {/* Medicine Information */}
+        <section className="overflow-hidden rounded-2xl border border-[#E3E8EA] bg-white shadow-[0_4px_20px_rgba(63,41,48,0.04)]">
           <SectionHeader
             icon={Pill}
             title="Medicine information"
             description="Basic identification and product details."
           />
 
-          <div className="p-4 sm:p-5">
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className="p-5 sm:p-6">
+            <div className="grid gap-5 md:grid-cols-2">
               <Field label="Medicine name *">
                 <input
                   name="name"
@@ -222,7 +216,7 @@ export default function MedicineForm() {
 
               <Field label="Unit price (₹)">
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#A96F7D]">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#A96F7D]">
                     ₹
                   </span>
 
@@ -231,7 +225,7 @@ export default function MedicineForm() {
                     type="number"
                     min="0"
                     step="0.01"
-                    className="input pl-8"
+                    className="input pl-9"
                     value={form.unitPrice}
                     onChange={change}
                   />
@@ -241,18 +235,16 @@ export default function MedicineForm() {
           </div>
         </section>
 
-        {/* ================================
-            Inventory & Expiry
-        ================================= */}
-        <section className="overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
+        {/* Inventory & Expiry */}
+        <section className="overflow-hidden rounded-2xl border border-[#E3E8EA] bg-white shadow-[0_4px_20px_rgba(63,41,48,0.04)]">
           <SectionHeader
             icon={Package}
             title="Inventory & expiry"
             description="Keep stock levels and expiry information up to date."
           />
 
-          <div className="p-4 sm:p-5">
-            <div className="grid gap-4 md:grid-cols-3">
+          <div className="p-5 sm:p-6">
+            <div className="grid gap-5 md:grid-cols-3">
               <Field label="Quantity">
                 <input
                   name="quantity"
@@ -280,45 +272,48 @@ export default function MedicineForm() {
                   <input
                     name="expiryDate"
                     type="date"
-                    className="input pr-10"
+                    className="input pr-11"
                     value={form.expiryDate}
                     onChange={change}
                   />
 
                   <CalendarDays
                     size={17}
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#A96F7D]"
+                    className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#A96F7D]"
                   />
                 </div>
               </Field>
             </div>
 
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#EAD5D8] bg-[#9DB4C0] px-3 py-2.5">
-              <CheckCircle2
-                size={16}
-                className="shrink-0 text-[#A96F7D]"
-              />
+            <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#DDE8EA] bg-[#F4F8F9] px-4 py-3.5">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#DCECEF]">
+                <CheckCircle2 size={16} className="text-[#6C8C95]" />
+              </div>
 
-              <p className="text-xs leading-5 text-[#6A414B]">
-                Set the reorder level to receive stock attention when the
-                quantity reaches the specified limit.
-              </p>
+              <div>
+                <p className="text-xs font-bold text-[#4B363C]">
+                  Stock reorder reminder
+                </p>
+
+                <p className="mt-0.5 text-xs leading-5 text-slate-500">
+                  Set the reorder level to receive stock attention when the
+                  quantity reaches the specified limit.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ================================
-            Supplier Details
-        ================================= */}
-        <section className="overflow-hidden rounded-2xl border border-[#EAD5D8] bg-white shadow-sm">
+        {/* Supplier Details */}
+        <section className="overflow-hidden rounded-2xl border border-[#E3E8EA] bg-white shadow-[0_4px_20px_rgba(63,41,48,0.04)]">
           <SectionHeader
             icon={Truck}
             title="Supplier details"
             description="Link this medicine to a supplier already in the system."
           />
 
-          <div className="p-4 sm:p-5">
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className="p-5 sm:p-6">
+            <div className="grid gap-5 md:grid-cols-2">
               <Field label="Supplier">
                 <select
                   name="supplierId"
@@ -350,20 +345,18 @@ export default function MedicineForm() {
           </div>
         </section>
 
-        {/* ================================
-            Form Actions
-        ================================= */}
-        <div className="flex flex-col-reverse gap-2 border-t border-[#EAD5D8] pt-4 sm:flex-row sm:justify-end">
+        {/* Form Actions */}
+        <div className="flex flex-col-reverse gap-3 border-t border-[#E3E8EA] pt-5 sm:flex-row sm:justify-end">
           <Link
             to="/medicines"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-[#EAD5D8] bg-white px-5 text-sm font-bold text-slate-700 transition hover:border-[C2DFE3] hover:bg-[#5C6B73] hover:text-[#5A3941]"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-[#DCE2E5] bg-white px-5 text-sm font-bold text-slate-600 transition hover:border-[#C2DFE3] hover:bg-[#F5F9FA] hover:text-[#4B363C]"
           >
             Cancel
           </Link>
 
           <button
             type="submit"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[C2DFE3] px-5 text-sm font-extrabold text-[#3F2930] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#D7A5B0] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[C2DFE3]/30"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#C2DFE3] px-6 text-sm font-extrabold text-[#3F2930] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#AFCFD4] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-[#C2DFE3]/40"
           >
             <Save size={18} />
             {isEdit ? "Update medicine" : "Save medicine"}
@@ -376,9 +369,9 @@ export default function MedicineForm() {
 
 function SectionHeader({ icon: Icon, title, description }) {
   return (
-    <div className="flex items-center gap-3 border-b border-[#EAD5D8] bg-gradient-to-r from-[#9DB4C0] to-white px-4 py-3.5 sm:px-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[C2DFE3] text-[#5E3C45] shadow-sm">
-        <Icon size={17} />
+    <div className="flex items-center gap-3 border-b border-[#E7ECEE] bg-gradient-to-r from-[#F3F7F8] to-white px-5 py-4 sm:px-6">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#DCECEF] text-[#5E3C45] shadow-sm">
+        <Icon size={18} />
       </div>
 
       <div className="min-w-0">
@@ -387,7 +380,7 @@ function SectionHeader({ icon: Icon, title, description }) {
             {title}
           </h3>
 
-          <span className="hidden h-1.5 w-1.5 rounded-full bg-[C2DFE3] sm:block" />
+          <span className="hidden h-1.5 w-1.5 rounded-full bg-[#AFCFD4] sm:block" />
         </div>
 
         <p className="mt-0.5 text-[11px] leading-5 text-slate-500 sm:text-xs">
@@ -401,8 +394,12 @@ function SectionHeader({ icon: Icon, title, description }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="label">{label}</label>
+      <label className="mb-1.5 block text-xs font-bold text-[#4B363C] sm:text-sm">
+        {label}
+      </label>
+
       {children}
     </div>
   );
 }
+
