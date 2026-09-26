@@ -102,12 +102,11 @@ export default function Login() {
                   />
                 </div>
 
-                <div className="flex min-w-0 flex-col justify-center">
-                  <p className="text-xl font-black leading-tight tracking-tight text-white">
+                <div className="flex flex-col justify-center">
+                  <h2 className="text-xl font-extrabold leading-tight text-white sm:text-2xl">
                     MediCare
-                  </p>
-
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C2DFE3]">
+                  </h2>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#C5DDE1]">
                     Shop Management
                   </p>
                 </div>
@@ -164,11 +163,11 @@ export default function Login() {
             {/* Mobile Logo */}
             {/* Mobile Logo */}
             <div className="mb-6 flex items-center gap-3 lg:hidden">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-24 sm:w-24">
                 <img
                   src={logo}
-                  alt="MediCare Logo"
-                  className="h-full w-full object-contain"
+                  alt="MediCare Pharmacy Logo"
+                  className="h-full w-full object-cover"
                 />
               </div>
 

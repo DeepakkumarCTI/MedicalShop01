@@ -18,6 +18,8 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import defaultMedicineImage from "../assets/images/medicinesyrup.png";
+import logo from "../assets/logo.png";
 
 /* =========================================================
    HELPERS
@@ -717,9 +719,7 @@ export default function StaffCreateBill() {
 
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E4EEF0] text-[#526D77]">
-              <FileText size={21} />
-            </div>
+            
 
             <div>
               <h1 className="text-xl font-black tracking-tight text-[#263238] sm:text-2xl">
@@ -756,9 +756,7 @@ export default function StaffCreateBill() {
 
         {!initialCart.length && !cart.length ? (
           <div className="rounded-2xl border border-[#DDE6E8] bg-white px-6 py-14 text-center shadow-sm sm:px-12">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#E8F0F2] text-[#607982]">
-              <ShoppingCart size={29} />
-            </div>
+            
 
             <h2 className="mt-5 text-lg font-black text-[#263238]">
               No medicines selected
@@ -829,8 +827,23 @@ export default function StaffCreateBill() {
 
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex min-w-0 items-start gap-3">
-                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#415A63] text-sm font-black text-white">
-                            {index + 1}
+                          <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#E0E8EA] bg-white p-1.5 sm:h-16 sm:w-16">
+                            <img
+                              src={
+                                item.image ||
+                                medicines.find(
+                                  (medicine) =>
+                                    medicine.id === item.medicineId
+                                )?.image ||
+                                defaultMedicineImage
+                              }
+                              alt={item.name || "Medicine"}
+                              className="h-full w-full object-contain"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = defaultMedicineImage;
+                              }}
+                            />
                           </div>
 
                           <div className="min-w-0">
@@ -1109,15 +1122,12 @@ export default function StaffCreateBill() {
                   {/* NAME */}
 
                   <div>
-                    <label className="billing-label">
+                    <label className="billing-label ">
                       Customer Name
                     </label>
 
                     <div className="relative">
-                      <UserRound
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0ADB1]"
-                      />
+                      
 
                       <input
                         className="billing-input pl-10"
@@ -1132,7 +1142,7 @@ export default function StaffCreateBill() {
 
                           setError("");
                         }}
-                        placeholder=""
+                        placeholder="Enter the Name "
                       />
                     </div>
                   </div>
@@ -1145,10 +1155,7 @@ export default function StaffCreateBill() {
                     </label>
 
                     <div className="relative">
-                      <Phone
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0ADB1]"
-                      />
+                      
 
                       <input
                         className="billing-input pl-10"
@@ -1169,7 +1176,7 @@ export default function StaffCreateBill() {
 
                           setError("");
                         }}
-                        placeholder=""
+                        placeholder="Enter the Mobile Number"
                       />
                     </div>
                   </div>
@@ -1450,8 +1457,12 @@ function ProfessionalBill({ bill }) {
       <div className="border-b-2 border-[#344850] bg-white px-5 py-5 sm:px-7">
         <div className="flex items-start justify-between gap-5">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#415A63] text-white">
-              <ShieldCheck size={24} />
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-24 sm:w-24">
+              <img
+                src={logo}
+                alt="MediCare Pharmacy Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
 
             <div className="min-w-0">

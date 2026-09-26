@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import defaultMedicineImage from "../assets/images/medicinesyrup.png";
+import logo from "../assets/logo.png";
 
 const money = (value) =>
   `₹${Number(value || 0).toLocaleString("en-IN", {
@@ -211,8 +213,12 @@ export default function StaffDashboard() {
           {/* Brand */}
 
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#DCECEF] text-[#526970]">
-              <Activity size={22} strokeWidth={2.2} />
+            <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden sm:h-16 sm:w-16">
+              <img
+                src={logo}
+                alt="MediCare Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
 
             <div className="min-w-0">
@@ -373,8 +379,7 @@ export default function StaffDashboard() {
                   </p>
                 </div>
 
-                <div className="hidden items-center gap-1.5 rounded-lg bg-[#F5F8F9] px-2.5 py-1.5 text-[10px] font-bold text-[#74858B] sm:flex">
-                  <Package size={13} />
+                <div className="hidden items-center rounded-lg bg-[#F5F8F9] px-2.5 py-1.5 text-[10px] font-bold text-[#74858B] sm:flex">
                   {medicines.length} results
                 </div>
               </div>
@@ -469,8 +474,16 @@ export default function StaffDashboard() {
                     {/* Top */}
 
                     <div className="flex items-start justify-between gap-3">
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E8F1F3] text-[#60747B] transition group-hover:bg-[#DDECEF]">
-                        <Package size={20} />
+                      <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#E5ECEE] bg-white p-1.5 transition group-hover:border-[#BCD9DD] sm:h-16 sm:w-16">
+                        <img
+                          src={medicine.image || defaultMedicineImage}
+                          alt={medicine.name}
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = defaultMedicineImage;
+                          }}
+                        />
                       </div>
 
                       <span className="max-w-[120px] truncate rounded-lg bg-[#F0F4F5] px-2 py-1 text-[9px] font-bold text-[#75868C]">
@@ -684,8 +697,16 @@ export default function StaffDashboard() {
                       {/* Item Header */}
 
                       <div className="flex items-start gap-2">
-                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#EDF4F5] text-[#70838A]">
-                          <Package size={15} />
+                        <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#E5ECEE] bg-white p-1">
+                          <img
+                            src={medicine?.image || defaultMedicineImage}
+                            alt={item.name}
+                            className="h-full w-full object-contain"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = defaultMedicineImage;
+                            }}
+                          />
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -840,17 +861,23 @@ function DashboardStat({
 }) {
   return (
     <div
-      className={`flex items-center justify-between px-5 py-3 ${
-        border
+      className={`flex items-center justify-between gap-3 px-5 py-4 sm:py-5 ${border
           ? "border-t border-[#E6ECEE] sm:border-l sm:border-t-0"
           : ""
-      }`}
+        }`}
     >
-      <span className="text-[10px] font-bold uppercase tracking-wide text-[#9AA7AB]">
+      <span className="text-xs font-extrabold uppercase tracking-wide text-[#71838A] sm:text-sm">
         {label}
       </span>
 
-      <span className="text-sm font-black text-[#526970]">
+      <span
+        className={`text-lg font-black sm:text-xl ${label === "Available Medicines"
+            ? "text-[#0F766E]"
+            : label === "Filtered Results"
+              ? "text-[#2563EB]"
+              : "text-[#C2410C]"
+          }`}
+      >
         {value}
       </span>
     </div>
