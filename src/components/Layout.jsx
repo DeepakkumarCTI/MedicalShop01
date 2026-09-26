@@ -19,22 +19,27 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import profileImage from "../assets/images/profile.png";
+import logoImage from "../assets/logo.png";
+import dashboardImage from "../assets/images/dashboard.png";
+import medicinesImage from "../assets/images/total.png";
+import suppliersImage from "../assets/images/supplier.png";
 
 const navItems = [
   {
     to: "/",
     label: "Dashboard",
-    icon: LayoutDashboard,
+    image: dashboardImage,
   },
   {
     to: "/medicines",
     label: "Medicines",
-    icon: Pill,
+    image: medicinesImage,
   },
   {
     to: "/suppliers",
     label: "Suppliers",
-    icon: Truck,
+    image: suppliersImage,
   },
 ];
 
@@ -90,10 +95,11 @@ export default function Layout() {
         ========================== */}
         <div className="flex h-[76px] items-center justify-between border-b border-[#E5EBED] px-5 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#C2DFE3] text-[#42565C] shadow-sm">
-              <Activity
-                size={21}
-                strokeWidth={2.5}
+            <div className="grid h-11 w-11 shrink-0 place-items-center">
+              <img
+                src={logoImage}
+                alt="MediCare logo"
+                className="h-full w-full object-contain"
               />
             </div>
 
@@ -111,9 +117,7 @@ export default function Layout() {
           {/* Mobile Close */}
           <button
             type="button"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
+            onClick={() => setSidebarOpen(false)}
             className="grid h-9 w-9 place-items-center rounded-xl border border-[#DCE5E8] text-[#77878C] transition duration-200 hover:bg-[#F1F6F7] hover:text-[#4C5F65] lg:hidden"
             aria-label="Close sidebar"
           >
@@ -130,80 +134,50 @@ export default function Layout() {
           </p>
 
           <nav className="space-y-1.5">
-            {navItems.map(
-              ({
-                to,
-                label,
-                icon: Icon,
-              }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === "/"}
-                  onClick={() =>
-                    setSidebarOpen(false)
-                  }
-                  className={({ isActive }) =>
-                    `group relative flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-bold transition-all duration-200 ${
-                      isActive
-                        ? "bg-[#EAF2F3] text-[#40545A] shadow-sm"
-                        : "text-[#718187] hover:bg-[#F4F8F9] hover:text-[#43575D]"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {/* Active left indicator */}
-                      {isActive && (
-                        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#8CAEB5]" />
-                      )}
+            {navItems.map(({ to, label, image }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === "/"}
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `group relative flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-bold transition-all duration-200 ${isActive
+                    ? "bg-[#EAF2F3] text-[#40545A] shadow-sm"
+                    : "text-[#718187] hover:bg-[#F4F8F9] hover:text-[#43575D]"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {/* Active left indicator */}
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#8CAEB5]" />
+                    )}
 
-                      <div
-                        className={`grid h-8 w-8 place-items-center rounded-lg transition ${
-                          isActive
-                            ? "bg-white text-[#61787F] shadow-sm"
-                            : "bg-transparent text-[#91A0A5] group-hover:bg-white group-hover:text-[#63777D]"
+                    {/* Navigation image */}
+                    <div
+                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg transition ${isActive
+                          ? "bg-white shadow-sm"
+                          : "bg-transparent group-hover:bg-white"
                         }`}
-                      >
-                        <Icon size={17} />
-                      </div>
+                    >
+                      <img
+                        src={image}
+                        alt=""
+                        className="h-5 w-5 object-contain"
+                      />
+                    </div>
 
-                      <span>{label}</span>
+                    <span>{label}</span>
 
-                      {isActive && (
-                        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#7D9EA5]" />
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              )
-            )}
+                    {isActive && (
+                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#7D9EA5]" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
           </nav>
-        </div>
-
-        {/* =========================
-            DEMO MODE CARD
-        ========================== */}
-        <div className="mt-auto p-4">
-          <div className="relative overflow-hidden rounded-2xl border border-[#D8E7E9] bg-gradient-to-br from-[#EEF5F6] via-[#E4F0F2] to-[#D4E6E8] p-4 shadow-sm">
-
-            <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/40" />
-
-            <div className="relative">
-              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-white text-[#61777D] shadow-sm">
-                <ShieldCheck size={18} />
-              </div>
-
-              <p className="text-sm font-black text-[#40545A]">
-                Demo mode
-              </p>
-
-              <p className="mt-1 text-[11px] leading-5 text-[#708187]">
-                Data is saved locally in this browser for your
-                presentation.
-              </p>
-            </div>
-          </div>
         </div>
       </aside>
 
@@ -249,15 +223,7 @@ export default function Layout() {
             {/* =========================
                 NOTIFICATION
             ========================== */}
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="relative grid h-10 w-10 place-items-center rounded-xl border border-[#DCE5E8] bg-white text-[#718187] transition duration-200 hover:border-[#C7DADD] hover:bg-[#F3F7F8] hover:text-[#52666C]"
-            >
-              <Bell size={18} />
-
-              <span className="absolute right-2.5 top-2 h-1.5 w-1.5 rounded-full bg-[#8CAEB5] ring-2 ring-white" />
-            </button>
+            
 
             {/* =========================
                 ADD MEDICINE
@@ -285,8 +251,12 @@ export default function Layout() {
                 className="flex items-center gap-2 rounded-xl border border-[#DCE5E8] bg-white p-1.5 pr-2.5 transition duration-200 hover:border-[#C7DADD] hover:bg-[#F4F8F9]"
               >
                 {/* Avatar */}
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#E4EFF1] text-[10px] font-black text-[#61777D]">
-                  AD
+                <div className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#E4EFF1]">
+                  <img
+                    src={profileImage}
+                    alt="Admin profile"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
 
                 <span className="hidden text-xs font-black text-[#596B71] sm:block">

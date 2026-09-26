@@ -17,6 +17,12 @@ import { useApp } from "../context/AppContext";
 import PageHeader from "../components/PageHeader";
 import ConfirmModal from "../components/ConfirmModal";
 
+import defaultSupplierImage from "../assets/supplier/supplier-arun.png";
+
+import totalSuppliersImage from "../assets/images/total-sales.png";
+import linkedMedicinesImage from "../assets/images/linked.png";
+import supplierRecordsImage from "../assets/images/record.png";
+
 const blank = {
   name: "",
   company: "",
@@ -107,25 +113,28 @@ export default function Suppliers() {
           SUPPLIER OVERVIEW
       ====================================================== */}
 
+      {/* =====================================================
+    SUPPLIER OVERVIEW
+====================================================== */}
+
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <SummaryCard
-          icon={Truck}
+          image={totalSuppliersImage}
           label="Total Suppliers"
           value={data.suppliers.length}
         />
 
         <SummaryCard
-          icon={Package}
+          image={linkedMedicinesImage}
           label="Linked Medicines"
-          value={data.medicines.filter(
-            (medicine) =>
-              medicine.supplierId
-          ).length}
+          value={
+            data.medicines.filter((medicine) => medicine.supplierId).length
+          }
         />
 
         <div className="col-span-2 sm:col-span-1">
           <SummaryCard
-            icon={Users}
+            image={supplierRecordsImage}
             label="Supplier Records"
             value={data.suppliers.length}
           />
@@ -156,8 +165,16 @@ export default function Suppliers() {
 
                   <div className="relative flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E5EFF1] text-[#61757C] transition duration-200 group-hover:bg-[#D9EAED]">
-                        <Truck size={20} />
+                      <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl">
+                        <img
+                          src={supplier.image || defaultSupplierImage}
+                          alt={`${supplier.name} image`}
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = defaultSupplierImage;
+                          }}
+                        />
                       </div>
 
                       <div className="min-w-0">
@@ -593,15 +610,15 @@ export default function Suppliers() {
    SUMMARY CARD
 ========================================================= */
 
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
-}) {
+function SummaryCard({ image, label, value }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-[#DCE5E8] bg-white p-3.5 shadow-[0_3px_14px_rgba(38,50,56,0.04)] sm:p-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#EAF2F3] text-[#667A80]">
-        <Icon size={18} />
+      <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl">
+        <img
+          src={image}
+          alt=""
+          className="h-full w-full object-contain"
+        />
       </div>
 
       <div className="min-w-0">

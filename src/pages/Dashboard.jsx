@@ -20,6 +20,23 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { ExpiryBadge, StockBadge } from "../components/StatusBadge";
+import totalImage from "../assets/images/total.png";
+import lowStockImage from "../assets/images/low.png";
+import outOfStockImage from "../assets/images/out.png";
+import expiringSoonImage from "../assets/images/expiry.png";
+
+import salesTodayImage from "../assets/images/total-sales.png";
+import totalSalesImage from "../assets/images/total-sales1.png";
+import staffBillingImage from "../assets/images/staff.png";
+
+import suppliersImage from "../assets/images/supplier.png";
+import inventoryImage from "../assets/images/total.png";
+import expiryImage from "../assets/images/expirymonitoring.png";
+
+import addMedicineImage from "../assets/images/add.png";
+import manageMedicineImage from "../assets/images/manage.png";
+import defaultMedicineImage from "../assets/images/medicinesyrup.png";
+import profileImage from "../assets/images/profile.png";
 
 /* ============================================================
    HELPERS
@@ -300,39 +317,46 @@ export default function Dashboard() {
      STAT CARD
   ============================================================ */
 
+
+  /* ============================================================
+     STAT CARD
+  ============================================================ */
+
   const StatCard = ({
     title,
     value,
     description,
-    icon: Icon,
+    image,
     iconClass,
     valueClass = "text-slate-900",
   }) => (
-    <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_30px_rgba(15,23,42,0.07)]">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+    <div className="group rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_10px_30px_rgba(15,23,42,0.07)] sm:p-5">
+      <div className="flex items-start justify-between gap-2 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-bold uppercase tracking-[0.04em] text-slate-500 sm:text-[11px] sm:tracking-[0.08em]">
             {title}
           </p>
 
           <p
-            className={`mt-2 text-3xl font-extrabold tracking-tight ${valueClass}`}
+            className={`mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl ${valueClass}`}
           >
             {value}
           </p>
         </div>
 
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
-        >
-          <Icon size={21} />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden sm:h-14 sm:w-14">
+          <img
+            src={image}
+            alt=""
+            className="h-13 w-13 object-contain sm:h-11 sm:w-11"
+          />
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-2">
-        <div className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+      <div className="mt-3 flex items-start gap-2 sm:mt-4">
+        <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-60" />
 
-        <p className="text-xs font-medium text-slate-500">
+        <p className="text-[10px] leading-4 font-medium text-slate-500 sm:text-xs">
           {description}
         </p>
       </div>
@@ -394,147 +418,158 @@ export default function Dashboard() {
         </div>
       </section>
 
-     {/* ======================================================
-    STAT CARDS
-====================================================== */}
-<section className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+   
 
-  <StatCard
-    title="Total Medicines"
-    value={stats?.totalMedicines ?? medicines.length}
-    description="Medicines currently in inventory"
-    icon={Pill}
-    iconClass="bg-teal-50 text-teal-700"
-  />
+      {/* ======================================================
+      STAT CARDS
+  ====================================================== */}
 
-  <StatCard
-    title="Low Stock"
-    value={stats?.lowStock ?? lowStockCount}
-    description="Medicines need stock attention"
-    icon={AlertTriangle}
-    iconClass="bg-amber-50 text-amber-600"
-    valueClass="text-amber-600"
-  />
+      <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-4">
+        <StatCard
+          title="Total Medicines"
+          value={stats?.totalMedicines ?? medicines.length}
+          description="Medicines currently in inventory"
+          image={totalImage}
+          iconClass="bg-teal-50"
+        />
 
-  <StatCard
-    title="Out of Stock"
-    value={stats?.outOfStock ?? outOfStockCount}
-    description="Medicines currently unavailable"
-    icon={XCircle}
-    iconClass="bg-red-50 text-red-600"
-    valueClass="text-red-600"
-  />
+        <StatCard
+          title="Low Stock"
+          value={stats?.lowStock ?? lowStockCount}
+          description="Medicines need stock attention"
+          image={lowStockImage}
+          iconClass="bg-amber-50"
+          valueClass="text-amber-600"
+        />
 
-  <StatCard
-    title="Expiring Soon"
-    value={stats?.expiringSoon ?? expiringSoonCount}
-    description="Expiring within next 30 days"
-    icon={CalendarClock}
-    iconClass="bg-rose-50 text-rose-600"
-    valueClass="text-rose-600"
-  />
+        <StatCard
+          title="Out of Stock"
+          value={stats?.outOfStock ?? outOfStockCount}
+          description="Medicines currently unavailable"
+          image={outOfStockImage}
+          iconClass="bg-red-50"
+          valueClass="text-red-600"
+        />
 
-</section>
+        <StatCard
+          title="Expiring Soon"
+          value={stats?.expiringSoon ?? expiringSoonCount}
+          description="Expiring within next 30 days"
+          image={expiringSoonImage}
+          iconClass="bg-rose-50"
+          valueClass="text-rose-600"
+        />
+      </section>
 
 {/* ======================================================
     SALES SUMMARY
 ====================================================== */}
-<section>
-  <div className="mb-4 flex items-end justify-between">
-    <div>
-      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-        Sales Overview
-      </h2>
+      <section>
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+              Sales Overview
+            </h2>
 
-      <p className="mt-1 text-sm text-slate-500">
-        Track pharmacy revenue and billing activity
-      </p>
-    </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Track pharmacy revenue and billing activity
+            </p>
+          </div>
 
-    <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 sm:flex">
-      <TrendingUp size={19} />
-    </div>
-  </div>
-
-  <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
-
-    {/* Today */}
-    <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-teal-700 sm:h-11 sm:w-11 sm:rounded-xl">
-          <IndianRupee size={16} className="sm:h-[21px] sm:w-[21px]" />
+          <div className="hidden h-10 w-10 items-center justify-center sm:flex">
+            
+          </div>
         </div>
 
-        <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-teal-700 sm:px-3 sm:py-1 sm:text-[10px]">
-          Today
-        </span>
-      </div>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-4 md:grid-cols-3">
+          {/* Today */}
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex h-8 w-8 items-center justify-center sm:h-11 sm:w-11">
+                <img
+                  src={salesTodayImage}
+                  alt=""
+                  className="h-10 w-10 object-contain sm:h-10 sm:w-10"
+                />
+              </div>
 
-      <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
-        Today's Sales
-      </p>
+              <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-teal-700 sm:px-3 sm:py-1 sm:text-[10px]">
+                Today
+              </span>
+            </div>
 
-      <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
-        {formatCurrency(todaySalesAmount)}
-      </p>
+            <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
+              Today's Sales
+            </p>
 
-      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
-        <div className="h-full w-2/3 rounded-full bg-teal-500" />
-      </div>
-    </div>
+            <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+              {formatCurrency(todaySalesAmount)}
+            </p>
 
-    {/* Total */}
-    <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600 sm:h-11 sm:w-11 sm:rounded-xl">
-          <Receipt size={16} className="sm:h-[21px] sm:w-[21px]" />
+            <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
+              <div className="h-full w-2/3 rounded-full bg-teal-500" />
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex h-8 w-8 items-center justify-center sm:h-11 sm:w-11">
+                <img
+                  src={totalSalesImage}
+                  alt=""
+                  className="h-10 w-10 object-contain sm:h-10 sm:w-10"
+                />
+              </div>
+
+              <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-violet-600 sm:px-3 sm:py-1 sm:text-[10px]">
+                All Time
+              </span>
+            </div>
+
+            <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
+              Total Sales
+            </p>
+
+            <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+              {formatCurrency(totalSalesAmount)}
+            </p>
+
+            <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
+              <div className="h-full w-full rounded-full bg-violet-500" />
+            </div>
+          </div>
+
+          {/* Staff */}
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex h-8 w-8 items-center justify-center sm:h-11 sm:w-11">
+                <img
+                  src={staffBillingImage}
+                  alt=""
+                  className="h-7 w-7 object-contain sm:h-10 sm:w-10"
+                />
+              </div>
+
+              <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600 sm:px-3 sm:py-1 sm:text-[10px]">
+                Staff
+              </span>
+            </div>
+
+            <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
+              Staff Billing
+            </p>
+
+            <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+              {formatCurrency(staffBillingAmount)}
+            </p>
+
+            <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
+              <div className="h-full w-1/3 rounded-full bg-sky-500" />
+            </div>
+          </div>
         </div>
-
-        <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-violet-600 sm:px-3 sm:py-1 sm:text-[10px]">
-          All Time
-        </span>
-      </div>
-
-      <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
-        Total Sales
-      </p>
-
-      <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
-        {formatCurrency(totalSalesAmount)}
-      </p>
-
-      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
-        <div className="h-full w-full rounded-full bg-violet-500" />
-      </div>
-    </div>
-
-    {/* Staff */}
-    <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600 sm:h-11 sm:w-11 sm:rounded-xl">
-          <UserRound size={16} className="sm:h-[21px] sm:w-[21px]" />
-        </div>
-
-        <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-sky-600 sm:px-3 sm:py-1 sm:text-[10px]">
-          Staff
-        </span>
-      </div>
-
-      <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-xs sm:tracking-[0.08em]">
-        Staff Billing
-      </p>
-
-      <p className="mt-1 truncate text-sm font-extrabold tracking-tight text-slate-900 sm:text-2xl">
-        {formatCurrency(staffBillingAmount)}
-      </p>
-
-      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100 sm:mt-4">
-        <div className="h-full w-1/3 rounded-full bg-sky-500" />
-      </div>
-    </div>
-
-  </div>
-</section>
+      </section>
       {/* ======================================================
           BILLING HISTORY
       ====================================================== */}
@@ -625,8 +660,12 @@ export default function Dashboard() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
-                          <UserRound size={16} />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                          <img
+                            src={profileImage}
+                            alt="Customer profile"
+                            className="h-full w-full object-cover"
+                          />
                         </div>
 
                         <div className="min-w-0">
@@ -749,8 +788,12 @@ export default function Dashboard() {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-                              <UserRound size={16} />
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                              <img
+                                src={profileImage}
+                                alt="Customer profile"
+                                className="h-full w-full object-cover"
+                              />
                             </div>
 
                             <p className="text-sm font-bold text-slate-800">
@@ -832,7 +875,6 @@ export default function Dashboard() {
         {/* MEDICINE ATTENTION */}
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)] lg:col-span-2">
-
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
@@ -855,8 +897,12 @@ export default function Dashboard() {
 
           {attentionItems.length === 0 ? (
             <div className="px-5 py-14 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-                <PackageCheck size={24} />
+              <div className="mx-auto flex h-14 w-14 items-center justify-center">
+                <img
+                  src={defaultMedicineImage}
+                  alt=""
+                  className="h-12 w-12 object-contain"
+                />
               </div>
 
               <h3 className="mt-4 text-sm font-bold text-slate-800">
@@ -875,14 +921,21 @@ export default function Dashboard() {
                   className="flex flex-col gap-4 px-5 py-4 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-                      <Pill size={18} />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+                      <img
+                        src={medicine.image || defaultMedicineImage}
+                        alt={medicine.name || "Medicine"}
+                        className="h-full w-full object-contain"
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = defaultMedicineImage;
+                        }}
+                      />
                     </div>
 
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold text-slate-800">
-                        {medicine.name ||
-                          "Unnamed Medicine"}
+                        {medicine.name || "Unnamed Medicine"}
                       </p>
 
                       <p className="mt-1 text-xs text-slate-500">
@@ -907,7 +960,6 @@ export default function Dashboard() {
         {/* QUICK ACTIONS */}
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
-
           <div className="border-b border-slate-100 px-5 py-5">
             <h2 className="text-base font-extrabold text-slate-900">
               Quick Actions
@@ -919,15 +971,17 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-2.5 p-4">
-
             {/* Add Medicine */}
-
             <Link
               to="/medicines/new"
               className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-teal-200 hover:bg-teal-50/50"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 transition group-hover:bg-teal-100">
-                <Plus size={18} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+                <img
+                  src={addMedicineImage}
+                  alt=""
+                  className="h-8 w-8 object-contain"
+                />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -947,13 +1001,16 @@ export default function Dashboard() {
             </Link>
 
             {/* Manage Medicines */}
-
             <Link
               to="/medicines"
               className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-violet-200 hover:bg-violet-50/50"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                <Pill size={18} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+                <img
+                  src={manageMedicineImage}
+                  alt=""
+                  className="h-10 w-10 object-contain"
+                />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -973,13 +1030,16 @@ export default function Dashboard() {
             </Link>
 
             {/* Suppliers */}
-
             <Link
               to="/suppliers"
               className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-sky-200 hover:bg-sky-50/50"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                <Truck size={18} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+                <img
+                  src={suppliersImage}
+                  alt=""
+                  className="h-8 w-8 object-contain"
+                />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -1006,90 +1066,92 @@ export default function Dashboard() {
       ====================================================== */}
 
       <section className="grid grid-cols-3 gap-2 sm:gap-4">
+        {/* Suppliers */}
+        <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+              <img
+                src={suppliersImage}
+                alt="Suppliers"
+                className="h-7 w-7 object-contain sm:h-10 sm:w-10"
+              />
+            </div>
 
-  {/* Suppliers */}
+            <Link
+              to="/suppliers"
+              className="text-[8px] font-bold text-teal-700 hover:underline sm:text-xs"
+            >
+              View
+            </Link>
+          </div>
 
-  <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-    <div className="flex items-center justify-between gap-1">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600 sm:h-11 sm:w-11 sm:rounded-xl">
-        <Truck size={16} className="sm:h-5 sm:w-5" />
-      </div>
+          <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
+            Suppliers
+          </p>
 
-      <Link
-        to="/suppliers"
-        className="text-[8px] font-bold text-teal-700 hover:underline sm:text-xs"
-      >
-        View
-      </Link>
-    </div>
+          <p className="mt-1 text-base font-extrabold text-slate-900 sm:text-2xl">
+            {suppliers.length}
+          </p>
 
-    <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
-      Suppliers
-    </p>
+          <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
+            Suppliers available in the system
+          </p>
+        </div>
 
-    <p className="mt-1 text-base font-extrabold text-slate-900 sm:text-2xl">
-      {suppliers.length}
-    </p>
+        {/* Inventory */}
+        <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+              <img
+                src={inventoryImage}
+                alt="Inventory"
+                className="h-7 w-7 object-contain sm:h-10 sm:w-10"
+              />
+            </div>
+          </div>
 
-    <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
-      Suppliers available in the system
-    </p>
-  </div>
+          <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
+            Inventory Value
+          </p>
 
+          <p className="mt-1 truncate text-sm font-extrabold text-slate-900 sm:text-2xl">
+            {formatCurrency(inventoryValue)}
+          </p>
 
-  {/* Inventory */}
+          <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
+            Current value of medicine stock
+          </p>
+        </div>
 
-  <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-    <div className="flex items-center justify-between">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600 sm:h-11 sm:w-11 sm:rounded-xl">
-        <Boxes size={16} className="sm:h-5 sm:w-5" />
-      </div>
-    </div>
+        {/* Expiry */}
+        <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+              <img
+                src={expiryImage}
+                alt="Expiry monitoring"
+                className="h-7 w-7 object-contain sm:h-10 sm:w-10"
+              />
+            </div>
 
-    <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
-      Inventory Value
-    </p>
+            <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[7px] font-bold text-rose-600 sm:px-2.5 sm:py-1 sm:text-[10px]">
+              30 Days
+            </span>
+          </div>
 
-    <p className="mt-1 truncate text-sm font-extrabold text-slate-900 sm:text-2xl">
-      {formatCurrency(inventoryValue)}
-    </p>
+          <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
+            Expiry Monitoring
+          </p>
 
-    <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
-      Current value of medicine stock
-    </p>
-  </div>
+          <p className="mt-1 text-base font-extrabold text-slate-900 sm:text-2xl">
+            {expiringSoonCount}
+          </p>
 
-
-  {/* Expiry */}
-
-  <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] sm:rounded-2xl sm:p-5">
-    <div className="flex items-center justify-between gap-1">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 sm:h-11 sm:w-11 sm:rounded-xl">
-        <CalendarClock
-          size={16}
-          className="sm:h-5 sm:w-5"
-        />
-      </div>
-
-      <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[7px] font-bold text-rose-600 sm:px-2.5 sm:py-1 sm:text-[10px]">
-        30 Days
-      </span>
-    </div>
-
-    <p className="mt-3 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-5 sm:text-[11px] sm:tracking-[0.08em]">
-      Expiry Monitoring
-    </p>
-
-    <p className="mt-1 text-base font-extrabold text-slate-900 sm:text-2xl">
-      {expiringSoonCount}
-    </p>
-
-    <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
-      Medicines expiring within 30 days
-    </p>
-  </div>
-
-</section>
+          <p className="mt-1 text-[8px] leading-4 text-slate-500 sm:text-xs">
+            Medicines expiring within 30 days
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

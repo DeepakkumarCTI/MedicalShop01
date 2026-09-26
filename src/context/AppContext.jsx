@@ -1,4 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import paracetamolImage from "../assets/tablet/paracetamol.png";
+import amoxicillinImage from "../assets/tablet/amoxicillin.png";
+import cetirizineImage from "../assets/tablet/cetirizine.png";
+import vitaminCImage from "../assets/tablet/vitamin-c.png";
+import omeprazoleImage from "../assets/tablet/omeprazole.png";
+import azithromycinImage from "../assets/tablet/azithromycin.png";
+import orsImage from "../assets/tablet/ors.png";
+import coughSyrupImage from "../assets/images/medicinesyrup.png";
+
+import arunSupplierImage from "../assets/supplier/supplier-arun.png";
+import novaSupplierImage from "../assets/supplier/supplier-nova.png";
+import vitaSupplierImage from "../assets/supplier/supplier-vita.png";
 
 const AppContext = createContext(null);
 
@@ -21,6 +33,7 @@ const seedData = {
       expiryDate: "2027-08-15",
       supplierId: "sup-001",
       description: "Fever and mild pain relief tablets.",
+      image: paracetamolImage,
     },
     {
       id: "med-002",
@@ -35,6 +48,7 @@ const seedData = {
       expiryDate: "2027-01-20",
       supplierId: "sup-002",
       description: "Antibiotic capsule. Prescription required.",
+      image: amoxicillinImage,
     },
     {
       id: "med-003",
@@ -49,6 +63,7 @@ const seedData = {
       expiryDate: "2026-12-05",
       supplierId: "sup-001",
       description: "Antihistamine for allergy symptoms.",
+      image: cetirizineImage,
     },
     {
       id: "med-004",
@@ -63,6 +78,7 @@ const seedData = {
       expiryDate: "2028-03-18",
       supplierId: "sup-003",
       description: "Vitamin C supplement tablets.",
+      image: vitaminCImage,
     },
     {
       id: "med-005",
@@ -77,6 +93,7 @@ const seedData = {
       expiryDate: "2026-10-11",
       supplierId: "sup-002",
       description: "Used for acidity and gastric conditions.",
+      image: omeprazoleImage,
     },
     {
       id: "med-006",
@@ -91,6 +108,7 @@ const seedData = {
       expiryDate: "2026-09-28",
       supplierId: "sup-002",
       description: "Antibiotic tablet. Prescription required.",
+      image: azithromycinImage,
     },
     {
       id: "med-007",
@@ -105,6 +123,7 @@ const seedData = {
       expiryDate: "2028-06-30",
       supplierId: "sup-003",
       description: "Oral rehydration solution sachet.",
+      image: orsImage,
     },
     {
       id: "med-008",
@@ -119,6 +138,7 @@ const seedData = {
       expiryDate: "2026-11-02",
       supplierId: "sup-001",
       description: "Relief syrup for common cough symptoms.",
+      image: coughSyrupImage,
     },
   ],
   suppliers: [
@@ -129,6 +149,7 @@ const seedData = {
       phone: "9876543210",
       email: "arunmedical@example.com",
       address: "Gandhipuram, Coimbatore",
+      image: arunSupplierImage,
     },
     {
       id: "sup-002",
@@ -137,6 +158,7 @@ const seedData = {
       phone: "9843217650",
       email: "novasupply@example.com",
       address: "RS Puram, Coimbatore",
+      image: novaSupplierImage,
     },
     {
       id: "sup-003",
@@ -145,6 +167,7 @@ const seedData = {
       phone: "9798765432",
       email: "vitahealth@example.com",
       address: "Peelamedu, Coimbatore",
+      image: vitaSupplierImage,
     },
   ],
 };
@@ -154,10 +177,47 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 function getInitialData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      return {
+        ...seedData,
+        ...parsed,
+
+        medicines: (parsed.medicines || seedData.medicines).map(
+          (medicine) => {
+            const seededMedicine = seedData.medicines.find(
+              (item) => item.id === medicine.id
+            );
+
+            return {
+              ...seededMedicine,
+              ...medicine,
+              image: medicine.image || seededMedicine?.image,
+            };
+          }
+        ),
+
+        suppliers: (parsed.suppliers || seedData.suppliers).map(
+          (supplier) => {
+            const seededSupplier = seedData.suppliers.find(
+              (item) => item.id === supplier.id
+            );
+
+            return {
+              ...seededSupplier,
+              ...supplier,
+              image: supplier.image || seededSupplier?.image,
+            };
+          }
+        ),
+      };
+    }
   } catch {
-    // Fall back to seed data if storage is unavailable/corrupted.
+    // Use seed data if saved data is invalid.
   }
+
   return clone(seedData);
 }
 
