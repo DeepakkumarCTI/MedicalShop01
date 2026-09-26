@@ -3,13 +3,14 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  HeartPulse,
   LockKeyhole,
   Mail,
   ShieldCheck,
   UserRound,
+  
 } from "lucide-react";
 
+import logo from "../assets/logo.png";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
@@ -90,25 +91,26 @@ export default function Login() {
             <div className="relative z-10">
 
               {/* Logo */}
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#5C6B73] shadow-lg">
-                  <HeartPulse
-                    size={26}
-                    strokeWidth={2.4}
+              {/* Logo */}
+              {/* Desktop Logo */}
+              <div className="flex items-center gap-4">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center">
+                  <img
+                    src={logo}
+                    alt="MediCare Logo"
+                    className="h-full w-full object-contain"
                   />
                 </div>
 
-                <div>
-                  <p className="text-lg font-black tracking-tight text-white">
+                <div className="flex min-w-0 flex-col justify-center">
+                  <p className="text-xl font-black leading-tight tracking-tight text-white">
                     MediCare
                   </p>
 
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C2DFE3]">
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C2DFE3]">
                     Shop Management
                   </p>
                 </div>
-
               </div>
 
               {/* Brand Content */}
@@ -160,22 +162,25 @@ export default function Login() {
           <div className="w-full p-5 sm:p-8 lg:p-10">
 
             {/* Mobile Logo */}
+            {/* Mobile Logo */}
             <div className="mb-6 flex items-center gap-3 lg:hidden">
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C2DFE3] text-[#5C6B73]">
-                <HeartPulse size={23} />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center">
+                <img
+                  src={logo}
+                  alt="MediCare Logo"
+                  className="h-full w-full object-contain"
+                />
               </div>
 
-              <div>
-                <p className="font-black text-[#253237]">
+              <div className="flex min-w-0 flex-col justify-center">
+                <p className="text-lg font-black leading-tight text-[#253237]">
                   MediCare
                 </p>
 
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#5C6B73]">
+                <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#5C6B73]">
                   Shop Management
                 </p>
               </div>
-
             </div>
 
             {/* Header */}

@@ -364,7 +364,7 @@ export default function Dashboard() {
 
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
               Good morning, Admin{" "}
-              <span className="inline-block">👋</span>
+              <span className="inline-block"></span>
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:text-[15px]">
