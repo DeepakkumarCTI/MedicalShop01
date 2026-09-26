@@ -4,33 +4,27 @@ export function StockBadge({ medicine }) {
 
   if (quantity === 0) {
     return (
-      <Badge
-        image="/images/total.png"
-        className="border border-rose-200 bg-rose-50 text-rose-600"
+      <
       >
         Out of stock
-      </Badge>
+      </>
     );
   }
 
   if (quantity <= reorder) {
     return (
-      <Badge
-        image="/images/total.png"
-        className="border border-[#D8E7E9] bg-[#EDF5F6] text-[#61777D]"
+      <
       >
         Low stock
-      </Badge>
+      </>
     );
   }
 
   return (
-    <Badge
-      image="/images/total.png"
-      className="border border-[#D5E5E7] bg-[#F1F7F8] text-[#60767C]"
+    <
     >
       In stock
-    </Badge>
+    </>
   );
 }
 
@@ -43,33 +37,28 @@ export function ExpiryBadge({ date }) {
 
   if (expiry < today) {
     return (
-      <Badge
-        image="/images/total.png"
-        className="border border-rose-200 bg-rose-50 text-rose-600"
+      <
       >
         Expired
-      </Badge>
+      </>
     );
   }
 
   if (expiry <= inThirty) {
     return (
-      <Badge
-        image="/images/total.png"
-        className="border border-[#D8E7E9] bg-[#EDF5F6] text-[#61777D]"
+      < 
       >
         Expiring soon
-      </Badge>
+      </>
     );
   }
 
   return (
-    <Badge
-      image="/images/total.png"
-      className="border border-[#D5E5E7] bg-[#F1F7F8] text-[#60767C]"
-    >
+    <>
       Valid
-    </Badge>
+      </>
+      
+    
   );
 }
 

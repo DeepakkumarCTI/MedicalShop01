@@ -33,6 +33,7 @@ export default function Medicines() {
   const [status, setStatus] = useState("All");
   const [deleteId, setDeleteId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
 
   const categories = [
     "All",
@@ -216,7 +217,35 @@ export default function Medicines() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Medicine Grid */}
+        <div className="grid grid-cols-3 gap-2 p-2 sm:gap-3 sm:p-3 md:hidden">
+          {filtered.map((medicine) => (
+            <button
+              key={medicine.id}
+              type="button"
+              onClick={() => setSelectedMedicine(medicine)}
+              className="flex min-w-0 flex-col items-center justify-start rounded-xl border border-[#E3E8EA] bg-white p-2 text-center transition hover:border-[#C2DFE3] hover:bg-[#F5F9FA] active:scale-[0.98]"
+              aria-label={`View details for ${medicine.name}`}
+            >
+              <img
+                src={medicine.image || defaultMedicineImage}
+                alt={medicine.name}
+                className="h-12 w-12 object-contain sm:h-14 sm:w-14"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = defaultMedicineImage;
+                }}
+              />
+
+              <span className="mt-1.5 line-clamp-2 w-full break-words text-[11px] font-bold leading-4 text-[#3F2930] sm:text-xs">
+                {medicine.name}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop Table — unchanged */}
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[1100px] text-left">
             <thead className="bg-[#F5F8F9]">
               <tr className="border-b border-[#E3E8EA] text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#8C7A80]">
@@ -275,7 +304,6 @@ export default function Medicines() {
                     <p className="text-sm font-extrabold text-slate-700">
                       {medicine.quantity}
                     </p>
-
                     <p className="mt-0.5 text-[11px] font-medium text-slate-400">
                       Reorder at {medicine.reorderLevel}
                     </p>
@@ -293,7 +321,6 @@ export default function Medicines() {
                     <p className="text-sm font-semibold text-slate-600">
                       {formatDate(medicine.expiryDate)}
                     </p>
-
                     <div className="mt-1.5">
                       <ExpiryBadge date={medicine.expiryDate} />
                     </div>
@@ -361,6 +388,131 @@ export default function Medicines() {
           </div>
         )}
       </div>
+
+      {/* Mobile Medicine Details Popup */}
+      {selectedMedicine && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 md:hidden"
+          onClick={() => setSelectedMedicine(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="medicine-popup-title"
+            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <img
+                  src={selectedMedicine.image || defaultMedicineImage}
+                  alt={selectedMedicine.name}
+                  className="h-14 w-14 shrink-0 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = defaultMedicineImage;
+                  }}
+                />
+
+                <div className="min-w-0">
+                  <h2
+                    id="medicine-popup-title"
+                    className="break-words text-base font-extrabold text-[#3F2930]"
+                  >
+                    {selectedMedicine.name}
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {selectedMedicine.code}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedMedicine(null)}
+                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                aria-label="Close medicine details"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-3 text-sm">
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Category</span>
+                <span className="text-right font-semibold text-slate-700">
+                  {selectedMedicine.category}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Batch</span>
+                <span className="text-right font-semibold text-slate-700">
+                  {selectedMedicine.batch || "—"}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Stock</span>
+                <span className="text-right font-semibold text-slate-700">
+                  {selectedMedicine.quantity}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Reorder level</span>
+                <span className="text-right font-semibold text-slate-700">
+                  {selectedMedicine.reorderLevel}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Price</span>
+                <span className="text-right font-extrabold text-[#6A414B]">
+                  ₹{Number(selectedMedicine.unitPrice).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+                <span className="text-slate-500">Expiry date</span>
+                <span className="text-right font-semibold text-slate-700">
+                  {formatDate(selectedMedicine.expiryDate)}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-4">
+                <span className="text-slate-500">Manufacturer</span>
+                <span className="max-w-[60%] text-right font-semibold text-slate-700">
+                  {selectedMedicine.manufacturer || "—"}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-2">
+              <Link
+                to={`/medicines/${selectedMedicine.id}/edit`}
+                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[#C2DFE3] px-3 text-sm font-bold text-[#3F2930]"
+                onClick={() => setSelectedMedicine(null)}
+              >
+                <Edit3 size={16} />
+                Edit
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteId(selectedMedicine.id);
+                  setSelectedMedicine(null);
+                }}
+                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-rose-200 px-3 text-sm font-bold text-rose-600"
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation */}
       <ConfirmModal
