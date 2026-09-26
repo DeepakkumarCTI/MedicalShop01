@@ -132,7 +132,7 @@ export default function Suppliers() {
           }
         />
 
-        <div className="col-span-2 sm:col-span-1">
+        <div className="col-span-3 sm:col-span-1">
           <SummaryCard
             image={supplierRecordsImage}
             label="Supplier Records"
