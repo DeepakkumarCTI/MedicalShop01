@@ -6,7 +6,7 @@ export function StockBadge({ medicine }) {
     return (
       <
       >
-        Out of stock
+        Out of stock  |
       </>
     );
   }
@@ -15,7 +15,7 @@ export function StockBadge({ medicine }) {
     return (
       <
       >
-        Low stock
+        Low stock  | 
       </>
     );
   }
@@ -23,7 +23,7 @@ export function StockBadge({ medicine }) {
   return (
     <
     >
-      In stock
+      In stock  |
     </>
   );
 }
@@ -39,7 +39,7 @@ export function ExpiryBadge({ date }) {
     return (
       <
       >
-        Expired
+       |   Expired
       </>
     );
   }
@@ -48,14 +48,14 @@ export function ExpiryBadge({ date }) {
     return (
       < 
       >
-        Expiring soon
+        |  Expiring soon
       </>
     );
   }
 
   return (
     <>
-      Valid
+        |  Valid
       </>
       
     
