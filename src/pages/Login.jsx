@@ -7,7 +7,7 @@ import {
   Mail,
   ShieldCheck,
   UserRound,
-  
+
 } from "lucide-react";
 
 import logo from "../assets/logo.png";
@@ -16,8 +16,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [role, setRole] = useState("admin");
-  const [email, setEmail] = useState("admin@medicare.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,29 +25,25 @@ export default function Login() {
   const navigate = useNavigate();
 
   const selectRole = (nextRole) => {
-    setRole(nextRole);
-    setError("");
+  setRole(nextRole);
+  setEmail("");
+  setPassword("");
+  setError("");
+  setShowPassword(false);
+};
 
-    if (nextRole === "admin") {
-      setEmail("admin@medicare.com");
-      setPassword("admin123");
-    } else {
-      setEmail("staff@medicare.com");
-      setPassword("staff123");
-    }
-  };
+ const submit = (e) => {
+  e.preventDefault();
+  setError("");
 
-  const submit = (e) => {
-    e.preventDefault();
+  const result = login(email.trim(), password);
 
-    const result = login(email, password);
-
-    if (result.success) {
-      navigate(result.role === "staff" ? "/staff" : "/");
-    } else {
-      setError(result.message);
-    }
-  };
+  if (result.success) {
+    navigate(result.role === "staff" ? "/staff" : "/");
+  } else {
+    setError(result.message || "Invalid email or password");
+  }
+};
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#F5F8F9]">
@@ -237,10 +233,9 @@ export default function Login() {
                       font-bold
                       transition
                       active:scale-[0.98]
-                      ${
-                        role === value
-                          ? "bg-white text-[#253237] shadow-sm"
-                          : "text-[#7A898F] hover:text-[#5C6B73]"
+                      ${role === value
+                        ? "bg-white text-[#253237] shadow-sm"
+                        : "text-[#7A898F] hover:text-[#5C6B73]"
                       }
                     `}
                   >

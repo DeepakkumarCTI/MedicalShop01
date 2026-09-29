@@ -263,12 +263,12 @@ export function AppProvider({ children }) {
   const login = (email, password) => {
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (normalizedEmail === "admin@medicare.com" && password === "admin123") {
+    if (normalizedEmail === "admin@gmail.com" && password === "admin123") {
       setAuth({ isAuthenticated: true, role: "admin" });
       return { success: true, role: "admin" };
     }
 
-    if (normalizedEmail === "staff@medicare.com" && password === "staff123") {
+    if (normalizedEmail === "staff@gmail.com" && password === "staff123") {
       setAuth({ isAuthenticated: true, role: "staff" });
       return { success: true, role: "staff" };
     }
